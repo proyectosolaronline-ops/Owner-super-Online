@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pedidos — LandingKit</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#f4f4f0;--surface:#fff;--surface2:#f9f9f6;--border:#e8e8e2;
+  --accent:#1a1a1a;--accent2:#6366f1;--text:#1a1a1a;--muted:#888;
+  --danger:#ef4444;--warn:#f59e0b;--success:#16a34a;
+  --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── NO SESIÓN ── */
+.no-session{position:fixed;inset:0;background:var(--accent);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:24px;text-align:center}
+.no-session.show{display:flex}
+.no-session-ico{font-size:40px}
+.no-session-title{font-family:var(--font-d);font-size:18px;font-weight:800;color:#fff}
+.no-session-sub{font-size:13px;color:#555;line-height:1.5}
+.no-session-btn{padding:12px 24px;background:var(--accent2);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-b)}
+
+/* ── APP ── */
+.app{display:none;flex-direction:column;min-height:100vh;}
+.app.visible{display:flex}
+
+/* ── TOPBAR ── */
+.topbar{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-name{font-family:var(--font-d);font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.topbar-right{display:flex;align-items:center;gap:6px}
+
+/* ── CONTENT ── */
+.content{padding:16px;flex:1}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-b);display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.btn.wa{background:#25d366;color:#fff;border-color:#25d366}
+.btn.dark{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.sm{padding:7px 12px;font-size:12px;border-radius:8px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.full{width:100%;justify-content:center}
+.btn:disabled{opacity:.4;pointer-events:none}
+
+/* ── FILTROS ── */
+.filters-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;-webkit-overflow-scrolling:touch}
+.filters-bar::-webkit-scrollbar{display:none}
+.filter-chip{flex-shrink:0;padding:7px 14px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.filter-chip.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.chip-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:99px;font-size:10px;font-weight:700;padding:0 4px;background:rgba(0,0,0,.1)}
+.filter-chip.active .chip-count{background:rgba(255,255,255,.25)}
+
+/* ── TABLA ── */
+.tbl-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1.5px solid var(--border);background:var(--surface2)}
+td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:600}
+.badge.pending{background:#fef9c3;color:#854d0e}
+.badge.confirmed{background:#dbeafe;color:#1e40af}
+.badge.processing{background:#f3e8ff;color:#7e22ce}
+.badge.shipped{background:#ffedd5;color:#9a3412}
+.badge.delivered{background:#dcfce7;color:#166534}
+.badge.cancelled{background:#fee2e2;color:#991b1b}
+
+/* ── MODALS ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
+.modal-hdr{padding:16px 20px 14px;border-bottom:1.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-family:var(--font-d);font-size:15px;font-weight:700}
+.modal-body{padding:20px}
+.modal-foot{padding:14px 20px;border-top:1.5px solid var(--border);display:flex;gap:8px}
+.modal-foot .btn{flex:1;justify-content:center}
+
+/* ── DETALLE ── */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.detail-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.detail-val{font-weight:600;font-size:13px;word-break:break-word}
+
+/* ── ESTADO BTNS ── */
+.status-grid{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.status-btn{flex:1;min-width:80px;padding:8px 6px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-family:var(--font-b);text-align:center;transition:all .15s}
+.status-btn.sel-confirmed{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+.status-btn.sel-processing{background:#f3e8ff;color:#7e22ce;border-color:#d8b4fe}
+.status-btn.sel-shipped{background:#ffedd5;color:#9a3412;border-color:#fdba74}
+.status-btn.sel-delivered{background:#dcfce7;color:#166534;border-color:#86efac}
+.status-btn.sel-cancelled{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+
+/* ── NOTIF ── */
+.notif-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:14px}
+.notif-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.notif-msg{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font-b);background:var(--surface);color:var(--text);resize:vertical;min-height:70px;margin-bottom:10px}
+.notif-msg:focus{outline:none;border-color:var(--accent2)}
+.notif-btns{display:flex;gap:8px}
+
+/* ── EMPTY / SPINNER ── */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-ico{font-size:36px;margin-bottom:10px}
+.empty h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── SEARCH ── */
+.search-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-b);background:var(--surface);color:var(--text);margin-bottom:12px}
+.search-input:focus{outline:none;border-color:var(--accent2)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);border-radius:10px;padding:11px 18px;font-size:13px;font-weight:600;z-index:9999;display:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+#toast.success{background:var(--success);color:#fff}
+#toast.error{background:var(--danger);color:#fff}
+#toast.warn{background:var(--warn);color:#fff}
+
+@media(min-width:768px){
+  .overlay{align-items:center}
+  .modal{border-radius:14px;max-width:520px;width:100%}
+  .content{max-width:860px;margin:0 auto}
+}
+</style>
+</head>
+<body>
+
+<!-- SIN SESIÓN -->
+<div class="no-session" id="no-session">
+  <div class="no-session-ico">🔒</div>
+  <div class="no-session-title">Sesión no encontrada</div>
+  <div class="no-session-sub">Accede primero desde el panel principal de LandingKit.</div>
+  <button class="no-session-btn" onclick="history.back()">← Volver al panel</button>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-name" id="topbar-name">Pedidos</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn sm ghost" onclick="loadOrders()" title="Actualizar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      </button>
+      <button class="btn ghost sm" style="padding:4px 10px;color:var(--muted)" onclick="history.back()">← Panel</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <input class="search-input" id="search-orders" placeholder="🔍 Buscar por cliente, ID o email..." oninput="renderOrders()">
+
+    <!-- FILTROS -->
+    <div class="filters-bar">
+      <div class="filter-chip active" data-status="" onclick="setFilter(this,'')">Todos <span class="chip-count" id="cnt-all">0</span></div>
+      <div class="filter-chip" data-status="pending"    onclick="setFilter(this,'pending')">⏳ Pendiente <span class="chip-count" id="cnt-pending">0</span></div>
+      <div class="filter-chip" data-status="confirmed"  onclick="setFilter(this,'confirmed')">✅ Confirmado <span class="chip-count" id="cnt-confirmed">0</span></div>
+      <div class="filter-chip" data-status="processing" onclick="setFilter(this,'processing')">⚙️ En proceso <span class="chip-count" id="cnt-processing">0</span></div>
+      <div class="filter-chip" data-status="shipped"    onclick="setFilter(this,'shipped')">🚚 Enviado <span class="chip-count" id="cnt-shipped">0</span></div>
+      <div class="filter-chip" data-status="delivered"  onclick="setFilter(this,'delivered')">📦 Entregado <span class="chip-count" id="cnt-delivered">0</span></div>
+      <div class="filter-chip" data-status="cancelled"  onclick="setFilter(this,'cancelled')">✕ Cancelado <span class="chip-count" id="cnt-cancelled">0</span></div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="tbl-wrap" id="orders-wrap">
+      <div class="empty"><div class="spinner"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div class="overlay" id="modal-order">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-order-id">Pedido</div>
+      <button class="btn ghost sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="detail-grid" id="detail-grid"></div>
+      <div id="detail-notes"></div>
+
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:7px">Productos</div>
+      <div style="background:var(--surface2);border-radius:8px;padding:11px;margin-bottom:12px" id="detail-items"></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1.5px solid var(--border);margin-bottom:16px">
+        <span style="font-weight:600">Total</span>
+        <span id="detail-total" style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--accent2)">—</span>
+      </div>
+
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Cambiar estado</div>
+      <div class="status-grid" id="status-grid"></div>
+
+      <div class="notif-box">
+        <div class="notif-label">📣 Notificar al cliente</div>
+        <textarea class="notif-msg" id="notif-msg" placeholder="Escribe el mensaje para el cliente..."></textarea>
+        <div class="notif-btns">
+          <button class="btn wa sm full" onclick="notificarWA()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.99.574 3.842 1.566 5.4L2 22l4.754-1.535A9.944 9.944 0 0011.999 22c5.523 0 10-4.477 10-10S17.522 2 11.999 2zm0 18c-1.718 0-3.318-.465-4.698-1.275l-.336-.2-3.478 1.122.978-3.565-.22-.346A7.944 7.944 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.588 8-7.999 8z"/></svg>
+            WhatsApp
+          </button>
+          <button class="btn dark sm full" onclick="notificarEmail()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Email
+          </button>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <button class="btn full" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── SESIÓN — heredada del localStorage, idéntico al panel ─────
+const BACKEND = (new URLSearchParams(location.search).get('backend')) || localStorage.getItem('ld_backend') || '';
+const TOKEN   = localStorage.getItem('ld_token')  || '';
+const STORE_ID= localStorage.getItem('ld_store')  || '';
+let STORE_CFG = {};
+let ALL_ORDERS= [];
+let CURRENT_FILTER = '';
+let CURRENT_ORDER  = null;
+
+// ── INIT ──────────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  if (!TOKEN || !STORE_ID) {
+    document.getElementById('no-session').classList.add('show');
+    return;
+  }
+  document.getElementById('app').classList.add('visible');
+  loadStoreInfo();
+  loadOrders();
+});
+
+// ── API (idéntico al panel principal) ────────────────────────
+async function postAPI(payload) {
+  var res = await fetch(BACKEND, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+async function api(action, data) {
+  data = data || {};
+  try {
+    var payload = Object.assign({ action:action, storeId:STORE_ID, token:TOKEN }, data);
+    var json = await postAPI(payload);
+    if (json.error) throw new Error(json.error);
+    return json;
+  } catch(e) { toast(e.message,'error'); return null; }
+}
+
+// ── STORE INFO ────────────────────────────────────────────────
+async function loadStoreInfo() {
+  var info = await api('store.info');
+  if (!info || !info.store) return;
+  STORE_CFG = info.store.config || {};
+  document.getElementById('topbar-name').textContent = (info.store.name || 'Mi Tienda') + ' · Pedidos';
+}
+
+// ── CARGAR PEDIDOS ────────────────────────────────────────────
+async function loadOrders() {
+  document.getElementById('orders-wrap').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
+  var res = await api('order.list');
+  if (!res) return;
+  ALL_ORDERS = res.orders || [];
+  updateCounts();
+  renderOrders();
+}
+
+function updateCounts() {
+  var statuses = ['pending','confirmed','processing','shipped','delivered','cancelled'];
+  document.getElementById('cnt-all').textContent = ALL_ORDERS.length;
+  statuses.forEach(function(s) {
+    var el = document.getElementById('cnt-'+s);
+    if (el) el.textContent = ALL_ORDERS.filter(function(o){ return o.status===s; }).length;
+  });
+}
+
+// ── FILTROS ───────────────────────────────────────────────────
+function setFilter(el, status) {
+  CURRENT_FILTER = status;
+  document.querySelectorAll('.filter-chip').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  renderOrders();
+}
+
+function getFiltered() {
+  var q = (document.getElementById('search-orders').value||'').toLowerCase();
+  var list = CURRENT_FILTER
+    ? ALL_ORDERS.filter(function(o){ return o.status===CURRENT_FILTER; })
+    : ALL_ORDERS;
+  if (q) list = list.filter(function(o){
+    return (o.orderId||'').toLowerCase().includes(q) ||
+           (o.customerName||'').toLowerCase().includes(q) ||
+           (o.customerEmail||'').toLowerCase().includes(q);
+  });
+  return list;
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function renderOrders() {
+  var orders = getFiltered();
+  var wrap = document.getElementById('orders-wrap');
+  if (!orders.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-ico">📦</div><h3>Sin pedidos</h3></div>';
+    return;
+  }
+  wrap.innerHTML = '<table><thead><tr><th>ID</th><th>Cliente</th><th>Total</th><th>Estado</th><th></th></tr></thead><tbody>' +
+    orders.map(function(o) {
+      return '<tr>' +
+        '<td style="font-family:var(--mono);font-size:11px;color:var(--muted)">' + esc(o.orderId) + '</td>' +
+        '<td><div style="font-weight:600">' + esc(o.customerName||'—') + '</div>' +
+             '<div style="font-size:11px;color:var(--muted)">' + esc(o.customerPhone||'') + '</div></td>' +
+        '<td style="font-weight:700">' + fmt(o.total) + '</td>' +
+        '<td><span class="badge '+(o.status||'pending')+'">' + labelStatus(o.status) + '</span></td>' +
+        '<td><button class="btn sm" onclick="openDetail(this.dataset.id)" data-id="'+esc(o.orderId)+'">Ver</button></td>' +
+      '</tr>';
+    }).join('') +
+  '</tbody></table>';
+}
+
+// ── DETALLE ───────────────────────────────────────────────────
+function openDetail(orderId) {
+  var o = ALL_ORDERS.find(function(x){ return x.orderId===orderId; });
+  if (!o) return;
+  CURRENT_ORDER = o;
+
+  document.getElementById('modal-order-id').textContent = orderId;
+
+  document.getElementById('detail-grid').innerHTML =
+    di('Cliente',   o.customerName    || '—') +
+    di('Teléfono',  o.customerPhone   || '—') +
+    di('Email',     o.customerEmail   || '—') +
+    di('Fecha',     o.createdAt ? new Date(o.createdAt).toLocaleDateString('es-MX') : '—') +
+    (o.customerAddress ? di('Dirección', o.customerAddress) : '');
+
+  document.getElementById('detail-notes').innerHTML = o.notes
+    ? '<div style="background:#fef9c3;border-radius:8px;padding:9px 11px;font-size:13px;margin-bottom:12px">📝 '+esc(o.notes)+'</div>'
+    : '';
+
+  var items = Array.isArray(o.items) ? o.items : (typeof o.items==='string' ? JSON.parse(o.items||'[]') : []);
+  document.getElementById('detail-items').innerHTML = items.length
+    ? items.map(function(i){
+        return '<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid var(--border)">' +
+          '<span>'+ esc(i.name||i.productId) +'</span>' +
+          '<span style="color:var(--muted)">× '+i.qty+(i.price?' · '+fmt(i.price*i.qty):'')+'</span>' +
+        '</div>';
+      }).join('')
+    : '<div style="color:var(--muted);font-size:13px">Sin detalle</div>';
+
+  document.getElementById('detail-total').textContent = fmt(o.total);
+
+  // Botones de estado
+  var statuses = [
+    {k:'confirmed',  l:'✅ Confirmado'},
+    {k:'processing', l:'⚙️ En proceso'},
+    {k:'shipped',    l:'🚚 Enviado'},
+    {k:'delivered',  l:'📦 Entregado'},
+    {k:'cancelled',  l:'✕ Cancelar'}
+  ];
+  document.getElementById('status-grid').innerHTML = statuses.map(function(s) {
+    var sel = o.status===s.k ? 'sel-'+s.k : '';
+    return '<button class="status-btn '+sel+'" onclick="changeStatus(\''+orderId+'\',\''+s.k+'\')">'+s.l+'</button>';
+  }).join('');
+
+  // Mensaje de notificación por defecto
+  document.getElementById('notif-msg').value = defaultMsg(o);
+
+  document.getElementById('modal-order').classList.add('open');
+}
+
+function di(label, val) {
+  return '<div><div class="detail-label">'+label+'</div><div class="detail-val">'+esc(String(val))+'</div></div>';
+}
+
+function defaultMsg(o) {
+  var n = o.customerName || '';
+  var id = o.orderId;
+  var msgs = {
+    pending:    'Hola '+n+', recibimos tu pedido #'+id+'. Pronto lo confirmamos.',
+    confirmed:  'Hola '+n+', tu pedido #'+id+' fue confirmado. ¡Gracias por tu compra!',
+    processing: 'Hola '+n+', tu pedido #'+id+' está siendo preparado.',
+    shipped:    'Hola '+n+', tu pedido #'+id+' ya fue enviado y está en camino. 🚚',
+    delivered:  'Hola '+n+', tu pedido #'+id+' fue entregado. ¡Esperamos que lo disfrutes! 😊',
+    cancelled:  'Hola '+n+', lamentamos informarte que tu pedido #'+id+' fue cancelado.'
+  };
+  return msgs[o.status||'pending'] || '';
+}
+
+// ── CAMBIAR ESTADO ────────────────────────────────────────────
+async function changeStatus(orderId, status) {
+  var res = await api('order.update.status', { orderId:orderId, status:status });
+  if (!res) return;
+  var o = ALL_ORDERS.find(function(x){ return x.orderId===orderId; });
+  if (o) { o.status=status; CURRENT_ORDER=o; }
+
+  // Actualizar botones del modal
+  document.querySelectorAll('.status-btn').forEach(function(btn) {
+    var s = btn.getAttribute('onclick').match(/'([^']+)'\)$/)[1];
+    btn.className = 'status-btn ' + (s===status ? 'sel-'+s : '');
+  });
+
+  // Actualizar mensaje por defecto
+  if (o) document.getElementById('notif-msg').value = defaultMsg(o);
+
+  updateCounts();
+  renderOrders();
+  toast('Estado: ' + labelStatus(status), 'success');
+}
+
+// ── NOTIFICACIONES ────────────────────────────────────────────
+function notificarWA() {
+  if (!CURRENT_ORDER) return;
+  var phone = (CURRENT_ORDER.customerPhone||'').replace(/\D/g,'');
+  if (!phone) { toast('Sin teléfono registrado en este pedido','error'); return; }
+  var msg = document.getElementById('notif-msg').value.trim();
+  if (!msg)  { toast('Escribe un mensaje primero','error'); return; }
+  window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(msg), '_blank');
+}
+
+function notificarEmail() {
+  if (!CURRENT_ORDER) return;
+  var email = CURRENT_ORDER.customerEmail || '';
+  if (!email) { toast('Sin email registrado en este pedido','error'); return; }
+  var msg  = document.getElementById('notif-msg').value.trim();
+  var subj = 'Actualización de tu pedido #' + CURRENT_ORDER.orderId;
+  window.open('mailto:'+email+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(msg), '_blank');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function closeModal() { document.getElementById('modal-order').classList.remove('open'); }
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function fmt(n) {
+  var cur = (STORE_CFG.currency)||'MXN';
+  return new Intl.NumberFormat('es-MX',{style:'currency',currency:cur}).format(Number(n||0));
+}
+
+function labelStatus(s) {
+  return {pending:'Pendiente',confirmed:'Confirmado',processing:'En proceso',shipped:'Enviado',delivered:'Entregado',cancelled:'Cancelado'}[s]||'Pendiente';
+}
+
+function toast(msg,type){
+  type=type||'success';
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.className=type; el.style.display='block';
+  clearTimeout(el._t); el._t=setTimeout(function(){ el.style.display='none'; },3500);
+}
+
+document.getElementById('modal-order').addEventListener('click', function(e){
+  if(e.target===this) closeModal();
+});
+</script>
+</body>
+</html>
