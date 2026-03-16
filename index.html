@@ -340,6 +340,7 @@ tr:last-child td{border-bottom:none}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             Apariencia de tu tienda
           </div>
+          <button class="btn sm ghost" onclick="logout()">↩ Salir</button>
           <button class="btn primary sm" id="btn-save-appearance" onclick="saveAppearance()">Guardar</button>
         </div>
         <div class="editor-body">
@@ -1191,6 +1192,10 @@ function toast(msg, type) {
 document.querySelectorAll('.overlay').forEach(function(o){
   o.addEventListener('click', function(e){ if(e.target===o) o.classList.remove('open'); });
 });
+  function logout() {
+  ['ld_token','ld_store','ld_role','ld_backend'].forEach(function(k){ localStorage.removeItem(k); });
+  location.reload();
+}
 </script>
 </body>
 </html>
