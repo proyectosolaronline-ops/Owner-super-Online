@@ -1196,6 +1196,19 @@ document.querySelectorAll('.overlay').forEach(function(o){
   ['ld_token','ld_store','ld_role','ld_backend'].forEach(function(k){ localStorage.removeItem(k); });
   location.reload();
 }
+var _inactTimer;
+function resetInactTimer() {
+  clearTimeout(_inactTimer);
+  _inactTimer = setTimeout(function(){ logout(); }, 30 * 60 * 1000);
+}
+['click','touchstart','keypress','scroll'].forEach(function(e){
+  document.addEventListener(e, resetInactTimer, true);
+});
+resetInactTimer();
+  function logout() {
+  ['ld_token','ld_store','ld_role','ld_backend'].forEach(function(k){ localStorage.removeItem(k); });
+  location.reload();
+}
 </script>
 </body>
 </html>
