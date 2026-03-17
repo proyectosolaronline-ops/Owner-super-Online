@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Catálogo - Google Sheets</title>
 <style>
-/* MISMOS ESTILOS DEL ORIGINAL */
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 :root{
   --bg:#f4f4f0;--surface:#fff;--surface2:#f9f9f6;--border:#e8e8e2;
@@ -16,19 +15,13 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);padding:20px}
-
-/* BOTONES */
 .btn{padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-b);display:inline-flex;align-items:center;gap:6px}
 .btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2)}
 .btn.danger{color:var(--danger);border-color:#fecaca}
 .btn.sm{padding:7px 12px;font-size:12px;border-radius:8px}
 .btn.full{width:100%;justify-content:center}
-
-/* SECCIONES */
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .sec-title{font-family:var(--font-d);font-size:14px;font-weight:700}
-
-/* GRID DE PRODUCTOS */
 .prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .prod-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
 .prod-img{aspect-ratio:1;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:32px;overflow:hidden;position:relative}
@@ -39,8 +32,6 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);padding:20
 .prod-cat{font-size:10px;color:var(--muted);margin-bottom:5px}
 .prod-price{font-family:var(--font-d);font-size:15px;font-weight:800;color:var(--accent2)}
 .prod-actions{display:flex;gap:4px;padding:8px 10px;border-top:1px solid var(--border)}
-
-/* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px}
 .overlay.open{display:flex}
 .modal{background:var(--surface);border-radius:14px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
@@ -49,20 +40,14 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);padding:20
 .modal-body{padding:20px}
 .modal-foot{padding:14px 20px;border-top:1.5px solid var(--border);display:flex;gap:8px}
 .modal-foot .btn{flex:1;justify-content:center}
-
-/* FORM */
 .field{margin-bottom:14px}
 .field label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-b);color:var(--text);background:var(--surface)}
 .field textarea{resize:vertical;min-height:80px}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-/* IMAGEN TABS */
 .img-tabs{display:flex;gap:6px;margin-bottom:10px}
 .img-tab{flex:1;padding:9px;text-align:center;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--muted)}
 .img-tab.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
-
-/* UPLOAD ROW */
 .img-upload-row{border:1.5px dashed var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;position:relative;display:flex;align-items:center;gap:12px;background:var(--surface)}
 .img-upload-row input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
 .img-thumb{width:46px;height:46px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden}
@@ -70,38 +55,18 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);padding:20
 .img-upload-info{flex:1}
 .img-upload-label{font-size:13px;font-weight:600}
 .img-upload-hint{font-size:11px;color:var(--muted)}
-
-/* BUSCADOR */
 #search-products{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:14px}
-
-/* TOAST */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);border-radius:10px;padding:11px 18px;font-size:13px;font-weight:600;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.18)}
 #toast.success{background:var(--success);color:#fff}
 #toast.error{background:var(--danger);color:#fff}
 #toast.warn{background:var(--warn);color:#fff}
-
-/* EMPTY */
 .empty{text-align:center;padding:40px 20px;color:var(--muted)}
 .empty-ico{font-size:36px;margin-bottom:10px}
-
 .spinner{width:17px;height:17px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-
-<!-- CONFIGURACIÓN INICIAL - CAMBIA ESTA URL -->
-<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:10px 15px;margin-bottom:20px;font-size:14px">
-  <strong>⚠️ CONFIGURACIÓN NECESARIA:</strong><br>
-  1. Crea un Google Apps Script y desplegado como Web App<br>
-  2. Copia la URL y pégala en el input de abajo<br>
-  3. Haz click en "Conectar"<br><br>
-<div style="display:flex;gap:10px">
-    <input type="url" id="backend-url" placeholder="https://script.google.com/macros/s/..." style="flex:1;padding:8px;border:1px solid #ccc;border-radius:5px" value="https://script.google.com/macros/s/AKfycbxrdW7sLSiJNq_XF_xDjDgBl2rJppwwoRsEe-mNE8G-2BWOcI7DpyJpQYsyN8M-x-I/exec">
-    <button class="btn primary" onclick="connectBackend()">Conectar</button>
-</div>
-  <div id="connection-status" style="margin-top:10px;font-size:12px"></div>
-</div>
 
 <!-- HEADER CATÁLOGO -->
 <div class="sec-hdr">
@@ -113,7 +78,12 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);padding:20
 <input id="search-products" placeholder="Buscar productos..." oninput="filterProducts()">
 
 <!-- GRID DE PRODUCTOS -->
-<div class="prod-grid" id="prod-grid"></div>
+<div class="prod-grid" id="prod-grid">
+  <div style="grid-column:1/-1;text-align:center;padding:40px">
+    <div class="spinner"></div>
+    <p style="margin-top:10px">Cargando productos desde Google Sheets...</p>
+  </div>
+</div>
 
 <!-- MODAL PRODUCTO -->
 <div class="overlay" id="modal-add-product">
@@ -173,7 +143,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);padding:20
         
         <div id="img-file-view" style="display:none">
           <div class="img-upload-row">
-            <input type="file" id="p-img-file" accept="image/*" capture="environment" onchange="handleImgFile(this)">
+            <input type="file" id="p-img-file" accept="image/*" onchange="handleImgFile(this)">
             <div class="img-thumb">
               <span id="prod-img-emoji">📷</span>
               <img id="img-preview" src="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:6px">
@@ -198,59 +168,18 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);padding:20
 
 <script>
 // ============================================
-// CONFIGURACIÓN - MISMA LÓGICA QUE EL ORIGINAL
+// CONFIGURACIÓN - TU URL YA ESTÁ INTEGRADA
 // ============================================
-let BACKEND = localStorage.getItem('gs_backend') || '';
-let STORE_ID = 'store_demo_' + Date.now(); // ID único para esta sesión
-let TOKEN = 'demo_token_' + Date.now();
+const BACKEND = 'https://script.google.com/macros/s/AKfycbxrdW7sLSiJNq_XF_xDjDgBl2rJppwwoRsEe-mNE8G-2BWOcI7DpyJpQYsyN8M-x-I/exec';
+const STORE_ID = 'store_' + Date.now();
+const TOKEN = 'token_' + Date.now();
 let ALL_PRODS = [];
 let PENDING_IMG_B64 = '', PENDING_IMG_MIME = 'image/jpeg', PENDING_IMG_NAME = '';
 
 // ============================================
-// CONEXIÓN AL BACKEND (Google Apps Script)
-// ============================================
-function connectBackend() {
-  const url = document.getElementById('backend-url').value.trim();
-  if (!url) {
-    document.getElementById('connection-status').innerHTML = '❌ Ingresa una URL';
-    return;
-  }
-  
-  BACKEND = url;
-  localStorage.setItem('gs_backend', BACKEND);
-  document.getElementById('connection-status').innerHTML = '✅ Conectado. Cargando productos...';
-  
-  // Probar conexión
-  testConnection();
-}
-
-async function testConnection() {
-  try {
-    const res = await postAPI({ 
-      action: 'test.connection',
-      storeId: STORE_ID,
-      token: TOKEN
-    });
-    
-    if (res && res.ok) {
-      document.getElementById('connection-status').innerHTML = '✅ Conectado a Google Sheets';
-      loadProducts();
-    } else {
-      document.getElementById('connection-status').innerHTML = '❌ Error: ' + (res?.error || 'No response');
-    }
-  } catch(e) {
-    document.getElementById('connection-status').innerHTML = '❌ Error: ' + e.message;
-  }
-}
-
-// ============================================
-// FUNCIONES API - IDÉNTICAS AL ORIGINAL
+// FUNCIONES API
 // ============================================
 async function postAPI(payload) {
-  if (!BACKEND) {
-    throw new Error('No hay URL de backend configurada');
-  }
-  
   const res = await fetch(BACKEND, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -278,19 +207,20 @@ async function api(action, data) {
 }
 
 // ============================================
-// CARGAR PRODUCTOS DESDE GOOGLE SHEETS
+// CARGAR PRODUCTOS
 // ============================================
 async function loadProducts() {
   const res = await api('product.list', {});
   if (res && res.products) {
     ALL_PRODS = res.products;
     renderProducts(ALL_PRODS);
-    toast('Productos cargados desde Google Sheets', 'success');
+  } else {
+    document.getElementById('prod-grid').innerHTML = '<div style="grid-column:1/-1" class="empty"><div class="empty-ico">📦</div><h3>Error cargando productos</h3><p>Verifica la conexión con Google Sheets</p></div>';
   }
 }
 
 // ============================================
-// RENDERIZAR PRODUCTOS - IDÉNTICO AL ORIGINAL
+// RENDERIZAR PRODUCTOS
 // ============================================
 function renderProducts(prods) {
   var g = document.getElementById('prod-grid');
@@ -320,7 +250,7 @@ function renderProducts(prods) {
 }
 
 // ============================================
-// FILTRAR PRODUCTOS - IDÉNTICO AL ORIGINAL
+// FILTRAR PRODUCTOS
 // ============================================
 function filterProducts() {
   var q = document.getElementById('search-products').value.toLowerCase();
@@ -331,7 +261,7 @@ function filterProducts() {
 }
 
 // ============================================
-// MANEJO DE IMÁGENES - IDÉNTICO AL ORIGINAL
+// MANEJO DE IMÁGENES
 // ============================================
 function switchImgTab(tab) {
   document.getElementById('itab-url').classList.toggle('active', tab === 'url');
@@ -365,7 +295,7 @@ function handleImgFile(input) {
 }
 
 // ============================================
-// CRUD DE PRODUCTOS - IDÉNTICO AL ORIGINAL
+// CRUD DE PRODUCTOS
 // ============================================
 function editProduct(id) {
   var p = ALL_PRODS.find(function(x) { return x.productId === id; }); 
@@ -439,8 +369,6 @@ async function saveProduct() {
   closeModal('add-product');
   toast(editId ? 'Producto actualizado' : 'Producto creado ✅', 'success');
   clearProdForm();
-  
-  // Recargar productos desde Google Sheets
   loadProducts();
 }
 
@@ -451,13 +379,11 @@ async function deleteProduct(id) {
   if (!res) return;
   
   toast('Producto eliminado', 'warn');
-  
-  // Recargar productos desde Google Sheets
   loadProducts();
 }
 
 // ============================================
-// UTILIDADES - IDÉNTICAS AL ORIGINAL
+// UTILIDADES
 // ============================================
 function openModal(id) { 
   document.getElementById('modal-' + id).classList.add('open'); 
@@ -495,11 +421,9 @@ document.querySelectorAll('.overlay').forEach(function(o) {
   });
 });
 
-// Inicializar
-if (BACKEND) {
-  document.getElementById('backend-url').value = BACKEND;
-  connectBackend();
-}
+// Cargar productos al iniciar
+window.addEventListener('load', loadProducts);
 </script>
 </body>
 </html>
+'">🚀 Ejecutar Catálogo</button>
