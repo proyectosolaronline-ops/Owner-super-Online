@@ -616,7 +616,6 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <div id="toast"></div>
-
 <script>
 const BACKEND = (new URLSearchParams(location.search).get('backend')) || localStorage.getItem('ld_backend') || '';
 let TOKEN     = localStorage.getItem('ld_token')  || '';
@@ -626,6 +625,14 @@ let STORE_CFG = {};
 let ALL_PRODS=[], ALL_ORDERS=[], ALL_CUSTOMERS=[], ALL_STAFF=[];
 let PENDING_IMG_B64='', PENDING_IMG_MIME='image/jpeg', PENDING_IMG_NAME='';
 let ED = { logob64:'', logomime:'image/jpeg', logoname:'', bannerb64:'', bannermime:'image/jpeg', bannername:'' };
+let _inactTimer; // 👈 Declarada para el temporizador
+
+function fixImgUrl(url) {
+  if(!url) return '';
+  const m = url.match(/[?&]id=([\w-]+)/);
+  if(m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+  return url;
+}
 
 window.addEventListener('load', function() {
   var urlStore = new URLSearchParams(location.search).get('store');
@@ -638,7 +645,6 @@ window.addEventListener('load', function() {
   }
 });
 
-// ── LOGIN ──────────────────────────────────────────────────────
 function switchLoginTab(tab) {
   document.getElementById('tab-owner').classList.toggle('active', tab==='owner');
   document.getElementById('tab-staff').classList.toggle('active', tab==='staff');
@@ -691,10 +697,8 @@ function saveSession(token, storeId, role, name, email) {
   localStorage.setItem('ld_store',   storeId);
   localStorage.setItem('ld_role',    role);
   localStorage.setItem('ld_backend', BACKEND);
-  // topbar
   document.getElementById('topbar-name').textContent = name || 'Mi Tienda';
   document.getElementById('topbar-logo-letter').textContent = (name||'T')[0].toUpperCase();
-  // desktop sidebar
   document.getElementById('sb-name-d').textContent    = name || 'Mi Tienda';
   document.getElementById('sb-email-d').textContent   = email || '—';
   document.getElementById('sb-avatar-d').textContent  = (name||'?')[0].toUpperCase();
@@ -721,7 +725,6 @@ function logout() {
   location.reload();
 }
 
-// ── API ────────────────────────────────────────────────────────
 async function postAPI(payload) {
   var res = await fetch(BACKEND, {
     method:'POST',
@@ -741,7 +744,6 @@ async function api(action, data) {
   } catch(e) { toast(e.message,'error'); return null; }
 }
 
-// ── REFRESH ────────────────────────────────────────────────────
 async function refreshAll() {
   var calls = [api('store.dashboard'), api('product.list'), api('order.list'), api('customer.list'), api('store.info')];
   if (USER_ROLE==='owner') calls.push(api('staff.list'));
@@ -755,7 +757,6 @@ async function refreshAll() {
   if (staffRes)  { ALL_STAFF=staffRes.staff||[];      renderStaff(ALL_STAFF); }
 }
 
-// ── STORE INFO ─────────────────────────────────────────────────
 function renderStoreInfo(store) {
   if (!store) return;
   var name = store.name || 'Mi Tienda';
@@ -763,36 +764,53 @@ function renderStoreInfo(store) {
   document.getElementById('topbar-logo-letter').textContent = name[0].toUpperCase();
   document.getElementById('sb-name-d').textContent = name;
   STORE_CFG = store.config || {};
-  // Settings
+  
   document.getElementById('cfg-wa').value       = STORE_CFG.whatsapp||'';
   document.getElementById('cfg-currency').value = STORE_CFG.currency||'MXN';
   document.getElementById('cfg-notif').value    = String(STORE_CFG.emailNotifications!==false);
   document.getElementById('store-url-display').textContent = BACKEND
     ? new URL(BACKEND).origin.replace('script.google.com','proyectosolaronline-ops.github.io') + '/superOnline-Tienda/?store=' + STORE_ID
     : '—';
-  // Editor
+  
   document.getElementById('ed-name').value           = name;
   document.getElementById('ed-desc').value           = STORE_CFG.description||'';
   document.getElementById('ed-color').value          = STORE_CFG.primaryColor||'#6366f1';
   document.getElementById('ed-color-hex').value      = STORE_CFG.primaryColor||'#6366f1';
   document.getElementById('ed-text-color').value     = STORE_CFG.textColor||'#ffffff';
   document.getElementById('ed-text-color-hex').value = STORE_CFG.textColor||'#ffffff';
-  if (STORE_CFG.logo) {
-    var li=document.getElementById('logo-img');
-    li.src=STORE_CFG.logo; li.style.display='block';
-    document.getElementById('logo-emoji').style.display='none';
-    var tl=document.getElementById('topbar-logo');
-    tl.innerHTML='<img src="'+esc(STORE_CFG.logo)+'" style="width:100%;height:100%;object-fit:cover">';
+  
+  // LOGO
+  var logoImg = document.getElementById('logo-img');
+  var logoEmoji = document.getElementById('logo-emoji');
+  var topbarLogo = document.getElementById('topbar-logo');
+  
+  if (STORE_CFG.logo && typeof STORE_CFG.logo === 'string' && STORE_CFG.logo.trim() !== '') {
+    logoImg.src = fixImgUrl(STORE_CFG.logo);
+    logoImg.style.display = 'block';
+    logoEmoji.style.display = 'none';
+    topbarLogo.innerHTML = '<img src="' + esc(fixImgUrl(STORE_CFG.logo)) + '" style="width:100%;height:100%;object-fit:cover">';
+  } else {
+    logoImg.style.display = 'none';
+    logoEmoji.style.display = 'block';
+    topbarLogo.innerHTML = '<span id="topbar-logo-letter">' + name[0].toUpperCase() + '</span>';
   }
-  if (STORE_CFG.bannerUrl) {
-    var bi=document.getElementById('banner-img');
-    bi.src=STORE_CFG.bannerUrl; bi.style.display='block';
-    document.getElementById('banner-emoji').style.display='none';
+
+  // BANNER
+  var bannerImg = document.getElementById('banner-img');
+  var bannerEmoji = document.getElementById('banner-emoji');
+  
+  if (STORE_CFG.bannerUrl && typeof STORE_CFG.bannerUrl === 'string' && STORE_CFG.bannerUrl.trim() !== '') {
+    bannerImg.src = fixImgUrl(STORE_CFG.bannerUrl);
+    bannerImg.style.display = 'block';
+    bannerEmoji.style.display = 'none';
+  } else {
+    bannerImg.style.display = 'none';
+    bannerEmoji.style.display = 'block';
   }
+
   updatePreview();
 }
 
-// ── STORE EDITOR ───────────────────────────────────────────────
 function handleEditorImg(input, type) {
   var file = input.files[0]; if (!file) return;
   var maxMB = type==='logo' ? 3 : 5;
@@ -841,69 +859,105 @@ function updatePreview() {
   document.getElementById('preview-btn').style.background  = color;
   document.getElementById('preview-btn').style.color       = textColor;
 
+  // LOGO en preview
   var logoEl = document.getElementById('preview-logo');
-  var logoSrc = ED.logob64 ? ('data:'+ED.logomime+';base64,'+ED.logob64) : (STORE_CFG.logo||'');
-  logoEl.innerHTML = logoSrc ? '<img src="'+logoSrc+'" style="width:100%;height:100%;object-fit:cover;border-radius:7px">' : '🏪';
+  var logoSrc = '';
 
-  var bannerEl = document.getElementById('preview-banner');
-  var bannerSrc = ED.bannerb64 ? ('data:'+ED.bannermime+';base64,'+ED.bannerb64) : (STORE_CFG.bannerUrl||'');
-  if (bannerSrc) {
-    bannerEl.innerHTML = '<img src="'+bannerSrc+'" style="width:100%;height:100%;object-fit:cover">';
+  if (ED.logob64) {
+    logoSrc = 'data:' + ED.logomime + ';base64,' + ED.logob64;
+  } else if (STORE_CFG.logo && typeof STORE_CFG.logo === 'string' && STORE_CFG.logo.trim() !== '') {
+    logoSrc = fixImgUrl(STORE_CFG.logo);
+  }
+
+  if (logoSrc) {
+    logoEl.innerHTML = '<img src="' + logoSrc + '" style="width:100%;height:100%;object-fit:cover;border-radius:7px">';
   } else {
-    bannerEl.style.background = color+'33';
+    logoEl.innerHTML = '🏪';
+  }
+
+  // BANNER en preview
+  var bannerEl = document.getElementById('preview-banner');
+  var bannerSrc = '';
+
+  if (ED.bannerb64) {
+    bannerSrc = 'data:' + ED.bannermime + ';base64,' + ED.bannerb64;
+  } else if (STORE_CFG.bannerUrl && typeof STORE_CFG.bannerUrl === 'string' && STORE_CFG.bannerUrl.trim() !== '') {
+    bannerSrc = fixImgUrl(STORE_CFG.bannerUrl);
+  }
+
+  if (bannerSrc) {
+    bannerEl.innerHTML = '<img src="' + bannerSrc + '" style="width:100%;height:100%;object-fit:cover">';
+  } else {
+    bannerEl.style.background = color + '33';
     bannerEl.innerHTML = '<span style="font-size:28px;opacity:.4">🖼️</span>';
   }
 }
 
 async function saveAppearance() {
   var btn = document.getElementById('btn-save-appearance');
-  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
   var color     = document.getElementById('ed-color-hex').value || document.getElementById('ed-color').value;
   var textColor = document.getElementById('ed-text-color-hex').value || document.getElementById('ed-text-color').value;
   var name      = document.getElementById('ed-name').value.trim();
   var desc      = document.getElementById('ed-desc').value.trim();
-  var logoUrl   = STORE_CFG.logo      || '';
+
+  var logoUrl   = STORE_CFG.logo || '';
   var bannerUrl = STORE_CFG.bannerUrl || '';
 
   if (ED.logob64) {
     var r = await api('image.upload', { imageBase64:ED.logob64, mimeType:ED.logomime, fileName:ED.logoname||'logo.jpg' });
     if (r && r.imageUrl) {
       logoUrl = r.imageUrl;
-      var tl=document.getElementById('topbar-logo');
-      tl.innerHTML='<img src="'+esc(logoUrl)+'" style="width:100%;height:100%;object-fit:cover">';
     } else { toast('Error subiendo logo','error'); btn.disabled=false; btn.textContent='Guardar'; return; }
   }
 
   if (ED.bannerb64) {
     var r2 = await api('image.upload', { imageBase64:ED.bannerb64, mimeType:ED.bannermime, fileName:ED.bannername||'banner.jpg' });
-    if (r2 && r2.imageUrl) bannerUrl = r2.imageUrl;
-    else { toast('Error subiendo banner','error'); btn.disabled=false; btn.textContent='Guardar'; return; }
+    if (r2 && r2.imageUrl) {
+      bannerUrl = r2.imageUrl;
+    } else { toast('Error subiendo banner','error'); btn.disabled=false; btn.textContent='Guardar'; return; }
   }
 
   var config = {
-    primaryColor:       color,
-    textColor:          textColor,
-    description:        desc,
-    logo:               logoUrl,
-    bannerUrl:          bannerUrl,
-    whatsapp:           STORE_CFG.whatsapp||'',
-    currency:           STORE_CFG.currency||'MXN',
-    emailNotifications: STORE_CFG.emailNotifications!==false
+    primaryColor: color,
+    textColor: textColor,
+    description: desc,
+    whatsapp: STORE_CFG.whatsapp || '',
+    currency: STORE_CFG.currency || 'MXN',
+    emailNotifications: STORE_CFG.emailNotifications !== false
   };
 
-  var res = await api('store.settings.save', { config:config });
-  btn.disabled=false; btn.textContent='Guardar';
+  if (logoUrl && typeof logoUrl === 'string' && logoUrl.trim() !== '') config.logo = logoUrl;
+  if (bannerUrl && typeof bannerUrl === 'string' && bannerUrl.trim() !== '') config.bannerUrl = bannerUrl;
+
+  var res = await api('store.settings.save', { config: config });
+
+  btn.disabled = false;
+  btn.textContent = 'Guardar';
+
   if (!res) return;
+
   STORE_CFG = Object.assign({}, STORE_CFG, config);
-  ED.logob64=''; ED.bannerb64='';
+  ED.logob64 = '';
+  ED.bannerb64 = '';
+
   if (name) {
     document.getElementById('topbar-name').textContent = name;
     document.getElementById('sb-name-d').textContent   = name;
   }
-  toast('¡Apariencia guardada! 🎨','success');
+
+  var topbarLogo = document.getElementById('topbar-logo');
+  if (logoUrl && typeof logoUrl === 'string' && logoUrl.trim() !== '') {
+    topbarLogo.innerHTML = '<img src="' + esc(fixImgUrl(logoUrl)) + '" style="width:100%;height:100%;object-fit:cover">';
+  } else {
+    topbarLogo.innerHTML = '<span id="topbar-logo-letter">' + (name || 'T')[0].toUpperCase() + '</span>';
+  }
+
+  toast('¡Apariencia guardada! 🎨', 'success');
 }
 
-// ── DASHBOARD ──────────────────────────────────────────────────
 function renderDashboard(s) {
   if (!s) return;
   document.getElementById('d-orders').textContent    = s.totalOrders||0;
@@ -922,7 +976,6 @@ function renderRecentOrders() {
   document.getElementById('recent-orders-wrap').innerHTML = ordersTableHTML(recent);
 }
 
-// ── PRODUCTS ───────────────────────────────────────────────────
 function switchImgTab(tab) {
   document.getElementById('itab-url').classList.toggle('active', tab==='url');
   document.getElementById('itab-file').classList.toggle('active', tab==='file');
@@ -1025,7 +1078,6 @@ async function deleteProduct(id) {
   renderProducts(ALL_PRODS);
 }
 
-// ── ORDERS ─────────────────────────────────────────────────────
 function ordersTableHTML(orders) {
   if (!orders.length) return '<div class="empty"><div class="empty-ico">📦</div><h3>Sin pedidos</h3></div>';
   return '<table><thead><tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Estado</th><th></th></tr></thead><tbody>' +
@@ -1087,7 +1139,6 @@ async function changeOrderStatus(orderId, status) {
   if (dash) renderDashboard(dash.stats);
 }
 
-// ── CUSTOMERS ──────────────────────────────────────────────────
 function renderCustomers(customers) {
   var wrap = document.getElementById('customers-table');
   if (!customers.length) { wrap.innerHTML='<div class="empty"><div class="empty-ico">👤</div><h3>Sin clientes</h3></div>'; return; }
@@ -1102,7 +1153,6 @@ function renderCustomers(customers) {
   '</tbody></table>';
 }
 
-// ── STAFF ──────────────────────────────────────────────────────
 function renderStaff(staff) {
   var g = document.getElementById('staff-list');
   if (!staff.length) { g.innerHTML='<div class="empty"><div class="empty-ico">👥</div><h3>Sin operadores</h3></div>'; return; }
@@ -1146,7 +1196,6 @@ async function deleteStaff(staffId) {
   renderStaff(ALL_STAFF);
 }
 
-// ── SETTINGS ───────────────────────────────────────────────────
 async function saveSettings() {
   var config = {
     description:        STORE_CFG.description||'',
@@ -1164,7 +1213,6 @@ async function saveSettings() {
   STORE_CFG = Object.assign({}, STORE_CFG, config);
 }
 
-// ── PANELS ─────────────────────────────────────────────────────
 function showPanel(name) {
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
@@ -1175,7 +1223,6 @@ function showPanel(name) {
   document.getElementById('btn-add-product').style.display = name==='products' ? '' : 'none';
 }
 
-// ── UTILS ───────────────────────────────────────────────────────
 function openModal(id)  { document.getElementById('modal-'+id).classList.add('open'); }
 function closeModal(id) { document.getElementById('modal-'+id).classList.remove('open'); }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -1192,11 +1239,7 @@ function toast(msg, type) {
 document.querySelectorAll('.overlay').forEach(function(o){
   o.addEventListener('click', function(e){ if(e.target===o) o.classList.remove('open'); });
 });
-  function logout() {
-  ['ld_token','ld_store','ld_role','ld_backend'].forEach(function(k){ localStorage.removeItem(k); });
-  location.reload();
-}
-var _inactTimer;
+
 function resetInactTimer() {
   clearTimeout(_inactTimer);
   _inactTimer = setTimeout(function(){ logout(); }, 30 * 60 * 1000);
@@ -1205,10 +1248,6 @@ function resetInactTimer() {
   document.addEventListener(e, resetInactTimer, true);
 });
 resetInactTimer();
-  function logout() {
-  ['ld_token','ld_store','ld_role','ld_backend'].forEach(function(k){ localStorage.removeItem(k); });
-  location.reload();
-}
 </script>
 </body>
 </html>
