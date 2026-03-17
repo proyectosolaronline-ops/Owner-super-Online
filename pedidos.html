@@ -401,48 +401,32 @@ async function changeStatus(orderId, status) {
 // ============================================================
 function notificarWA() {
   if (!CURRENT_ORDER) {
-    toast('Error: No hay pedido seleccionado', 'error');
+    toast('Error: No hay pedido', 'error');
     return;
   }
 
-  const order = CURRENT_ORDER;
-  
-  let phone = (order.customerPhone || '').replace(/\D/g, '');
+  var phoneRaw = CURRENT_ORDER.customerPhone;
+  console.log('📞 Teléfono crudo:', phoneRaw);
+
+  var phone = String(phoneRaw || '').replace(/\D/g, '');
+  console.log('📞 Teléfono limpio:', phone);
+
   if (!phone) {
-    toast('Error: El cliente no tiene teléfono', 'error');
+    toast('Teléfono inválido: ' + JSON.stringify(phoneRaw), 'error');
     return;
   }
 
-  if (phone.length === 10) {
-    phone = '52' + phone;
+  var msg = document.getElementById('notif-msg').value.trim();
+  if (!msg) {
+    toast('Escribe un mensaje', 'error');
+    return;
   }
 
-  const linkPedido = STORE_BASE_URL + '?store=' + encodeURIComponent(STORE_ID) + '&verPedido=' + encodeURIComponent(order.orderId);
-  
-  const nombre = order.customerName || 'cliente';
-  const estado = order.status || 'pending';
-  const tienda = document.getElementById('topbar-name').textContent.replace(' · Pedidos', '') || 'Mi Tienda';
-  
-  let mensaje = '';
-  
-  if (estado === 'pending') {
-    mensaje = '🕐 PEDIDO RECIBIDO\n\nHola ' + nombre + ',\n\nHemos recibido tu pedido #' + order.orderId + ' en ' + tienda + ' y estamos verificándolo.\n\n🔗 Puedes ver los detalles aquí:\n' + linkPedido + '\n\nTe confirmaremos pronto. ¡Gracias!';
-  } else if (estado === 'confirmed') {
-    mensaje = '✅ PEDIDO CONFIRMADO\n\n¡Hola ' + nombre + '!\n\nTu pedido #' + order.orderId + ' en ' + tienda + ' ha sido confirmado.\n\n🔗 Detalle completo:\n' + linkPedido + '\n\nPronto iniciaremos con la preparación.';
-  } else if (estado === 'processing') {
-    mensaje = '⚙️ PEDIDO EN PROCESO\n\nHola ' + nombre + ',\n\nTu pedido #' + order.orderId + ' en ' + tienda + ' ya está siendo preparado.\n\n🔗 Seguimiento:\n' + linkPedido + '\n\nTe avisaremos cuando esté enviado.';
-  } else if (estado === 'shipped') {
-    mensaje = '🚚 PEDIDO ENVIADO\n\n¡Buenas noticias ' + nombre + '!\n\nTu pedido #' + order.orderId + ' en ' + tienda + ' ya está en camino.\n\n🔗 Rastreo:\n' + linkPedido + '\n\nGracias por tu compra.';
-  } else if (estado === 'delivered') {
-    mensaje = '📦 PEDIDO ENTREGADO\n\nHola ' + nombre + ',\n\nTu pedido #' + order.orderId + ' en ' + tienda + ' ha sido entregado.\n\n🔗 Detalle:\n' + linkPedido + '\n\n¡Esperamos que lo disfrutes! 😊';
-  } else if (estado === 'cancelled') {
-    mensaje = '✕ PEDIDO CANCELADO\n\nHola ' + nombre + ',\n\nTu pedido #' + order.orderId + ' en ' + tienda + ' ha sido cancelado.\n\n🔗 Detalle:\n' + linkPedido + '\n\nSi tienes dudas, contáctanos.';
-  } else {
-    mensaje = 'Hola ' + nombre + ', tu pedido #' + order.orderId + ' en ' + tienda + ' está en estado: ' + estado + '. Detalles: ' + linkPedido;
-  }
+  var url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+  console.log('🔗 URL:', url);
 
-  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(mensaje), '_blank');
-  toast('Notificación de ' + labelStatus(estado) + ' preparada', 'success');
+  window.open(url, '_blank');
+  toast('Intentando abrir WhatsApp', 'success');
 }
 
 function notificarEmail() {
