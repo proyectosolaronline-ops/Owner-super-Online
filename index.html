@@ -937,38 +937,6 @@ async function saveAppearance() {
   }
   toast('¡Apariencia guardada! 🎨','success');
 }
-  // ── BANNER ──
-  var bannerUrl = _bannerCurrentUrl;  // conserva lo que había por defecto
-  if (ED.bannerb64) {
-    var r2 = await api('image.upload', { imageBase64:ED.bannerb64, mimeType:ED.bannermime, fileName:ED.bannername||'banner.jpg' });
-    if (r2 && r2.imageUrl) {
-      bannerUrl = r2.imageUrl;
-      _bannerCurrentUrl = bannerUrl;
-    } else { toast('Error subiendo banner','error'); btn.disabled=false; btn.textContent='Guardar'; return; }
-  }
-
-  var config = {
-    primaryColor:       color,
-    textColor:          textColor,
-    description:        desc,
-    logo:               logoUrl,
-    bannerUrl:          bannerUrl,
-    whatsapp:           STORE_CFG.whatsapp||'',
-    currency:           STORE_CFG.currency||'MXN',
-    emailNotifications: STORE_CFG.emailNotifications!==false
-  };
-
-  var res = await api('store.settings.save', { config:config });
-  btn.disabled=false; btn.textContent='Guardar';
-  if (!res) return;
-  STORE_CFG = Object.assign({}, STORE_CFG, config);
-  ED.logob64=''; ED.bannerb64='';
-  if (name) {
-    document.getElementById('topbar-name').textContent = name;
-    document.getElementById('sb-name-d').textContent   = name;
-  }
-  toast('¡Apariencia guardada! 🎨','success');
-}
 // ── DASHBOARD ──────────────────────────────────────────────────
 function renderDashboard(s) {
   if (!s) return;
@@ -991,13 +959,10 @@ function renderRecentOrders() {
 // ── IMAGE URL FIX ──────────────────────────────────────────────
 function fixImgUrl(url) {
   if (!url) return '';
-  // Extraer el FILE_ID de cualquier formato de Google Drive
-  var match = url.match(/(?:\/d\/|[?&]id=|thumbnail\?id=)([a-zA-Z0-9_-]{10,})/);
-  if (match) {
-    var id = match[1];
-    // Usar thumbnail URL — evita el bloqueo CORS de Google Drive
-    return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400';
-  }
+  var m = url.match(/[?&]id=([\w-]+)/);
+  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+  var m2 = url.match(/\/d\/([\w-]+)/);
+  if (m2) return 'https://lh3.googleusercontent.com/d/' + m2[1];
   return url;
 }
 // ── PRODUCTS ───────────────────────────────────────────────────
