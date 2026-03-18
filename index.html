@@ -882,33 +882,26 @@ async function saveAppearance() {
   var desc      = document.getElementById('ed-desc').value.trim();
 
   // ── LOGO ──
-  // Si hay b64 nuevo → subir. Si no hay b64 Y la imagen actual está visible → conservar.
-  // Si la imagen fue eliminada (logo-img oculto y sin b64) → enviar ''.
-  var logoUrl = '';
-  var logoImgEl = document.getElementById('logo-img');
+  var logoUrl = _logoCurrentUrl;  // conserva lo que había por defecto
   if (ED.logob64) {
     var r = await api('image.upload', { imageBase64:ED.logob64, mimeType:ED.logomime, fileName:ED.logoname||'logo.jpg' });
     if (r && r.imageUrl) {
       logoUrl = r.imageUrl;
+      _logoCurrentUrl = logoUrl;
       var tl = document.getElementById('topbar-logo');
       tl.innerHTML='<img src="'+esc(fixImgUrl(logoUrl))+'" style="width:100%;height:100%;object-fit:cover">';
     } else { toast('Error subiendo logo','error'); btn.disabled=false; btn.textContent='Guardar'; return; }
-  } else if (logoImgEl.style.display !== 'none' && logoImgEl.src) {
-    logoUrl = STORE_CFG.logo || '';   // conservar la URL actual
   }
-  // else: imagen eliminada → logoUrl queda ''
 
   // ── BANNER ──
-  var bannerUrl = '';
-  var bannerImgEl = document.getElementById('banner-img');
+  var bannerUrl = _bannerCurrentUrl;  // conserva lo que había por defecto
   if (ED.bannerb64) {
     var r2 = await api('image.upload', { imageBase64:ED.bannerb64, mimeType:ED.bannermime, fileName:ED.bannername||'banner.jpg' });
-    if (r2 && r2.imageUrl) bannerUrl = r2.imageUrl;
-    else { toast('Error subiendo banner','error'); btn.disabled=false; btn.textContent='Guardar'; return; }
-  } else if (bannerImgEl.style.display !== 'none' && bannerImgEl.src) {
-    bannerUrl = STORE_CFG.bannerUrl || '';   // conservar la URL actual
+    if (r2 && r2.imageUrl) {
+      bannerUrl = r2.imageUrl;
+      _bannerCurrentUrl = bannerUrl;
+    } else { toast('Error subiendo banner','error'); btn.disabled=false; btn.textContent='Guardar'; return; }
   }
-  // else: imagen eliminada → bannerUrl queda ''
 
   var config = {
     primaryColor:       color,
@@ -931,7 +924,6 @@ async function saveAppearance() {
     document.getElementById('sb-name-d').textContent   = name;
   }
   toast('¡Apariencia guardada! 🎨','success');
-}
 
 // ── DASHBOARD ──────────────────────────────────────────────────
 function renderDashboard(s) {
