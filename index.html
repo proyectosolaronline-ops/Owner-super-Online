@@ -856,6 +856,7 @@ function updatePreview() {
 
   document.getElementById('preview-name').textContent = name;
   document.getElementById('preview-desc').textContent = desc;
+  document.documentElement.style.setProperty('--accent2', color);
   document.getElementById('preview-tag').style.background  = color;
   document.getElementById('preview-tag').style.color       = textColor;
   document.getElementById('preview-btn').style.background  = color;
