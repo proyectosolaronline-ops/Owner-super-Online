@@ -621,11 +621,12 @@ async function refreshAll() {
 /* ── fixImgUrl — IGUAL QUE TIENDA.HTML ── */
 function fixImgUrl(url) {
   if (!url) return '';
-  const m = url.match(/[?&]id=([\w-]+)/);
-  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+  var m = url.match(/[?&]id=([\w-]+)/);
+  if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w600';
+  var m2 = url.match(/\/d\/([\w-]+)/);
+  if (m2) return 'https://drive.google.com/thumbnail?id=' + m2[1] + '&sz=w600';
   return url;
 }
-
 function renderStoreInfo(store) {
   if (!store) return;
   var name = store.name || 'Mi Tienda';
