@@ -728,11 +728,7 @@ function showLErr(type, msg) {
   document.getElementById('l-btn-'+type).textContent='Ingresar';
 }
 
-function logout() {
-  ['ld_token','ld_store','ld_role'].forEach(function(k){ localStorage.removeItem(k); });
-  TOKEN=''; STORE_ID=''; USER_ROLE='';
-  location.reload();
-}
+
 
 // ── API ────────────────────────────────────────────────────────
 async function postAPI(payload) {
