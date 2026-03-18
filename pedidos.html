@@ -3,176 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Debug — Logo y Banner</title>
+<title>Test Logo y Banner — código exacto de tienda</title>
 <style>
-  body { font-family: sans-serif; background: #f4f4f0; padding: 20px; }
-  h2 { font-size: 14px; color: #888; text-transform: uppercase; margin: 20px 0 8px; }
-  .test { background: #fff; border: 1.5px solid #e8e8e2; border-radius: 12px; padding: 14px; margin-bottom: 14px; }
-  .test-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; color: #333; }
-  .test-url { font-size: 10px; color: #888; word-break: break-all; margin-bottom: 10px; font-family: monospace; }
-  .banner-css { height: 100px; border-radius: 8px; background-size: cover; background-position: center; background-color: #e0e7ff; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; }
-  .logo-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e8e8e2; display: block; }
-  .status { font-size: 11px; font-weight: 700; margin-top: 6px; padding: 4px 10px; border-radius: 99px; display: inline-block; }
-  .ok { background: #dcfce7; color: #166534; }
-  .fail { background: #fee2e2; color: #991b1b; }
-  input { width: 100%; padding: 10px; border: 1.5px solid #e8e8e2; border-radius: 8px; font-size: 13px; font-family: monospace; margin-bottom: 8px; box-sizing: border-box; }
-  button { padding: 10px 18px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; }
-  .divider { border: none; border-top: 1.5px solid #e8e8e2; margin: 24px 0; }
+  body { font-family: sans-serif; background: #fafafa; margin: 0; }
+
+  /* === EXACTAMENTE como en tienda.html === */
+  .hero {
+    background: #6366f1;
+    padding: 64px 20px;
+    color: #fff;
+  }
+  .hero h1 {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 14px;
+  }
+  .hero p {
+    font-size: 16px;
+    opacity: .85;
+    margin-bottom: 28px;
+  }
 </style>
 </head>
 <body>
 
-<h1 style="font-size:18px;font-weight:800;margin-bottom:4px">🔍 Debug — Imágenes Drive</h1>
-<p style="font-size:12px;color:#888;margin-bottom:20px">Pega una URL de Google Drive y compara qué método la carga</p>
-
-<div style="background:#fff;border:1.5px solid #e8e8e2;border-radius:12px;padding:14px;margin-bottom:20px">
-  <div style="font-size:11px;font-weight:700;margin-bottom:8px;color:#333">PEGA URL DE GOOGLE DRIVE</div>
-  <input id="input-url" placeholder="https://drive.google.com/file/d/XXXX/view?usp=sharing" />
-  <button onclick="runDebug()">Probar todos los métodos</button>
-</div>
-
-<div id="results" style="display:none">
-
-  <h2>Método 1 — lh3 (img tag)</h2>
-  <div class="test">
-    <div class="test-title">🔗 lh3.googleusercontent.com/d/ID</div>
-    <div class="test-url" id="url-lh3">—</div>
-    <img id="img-lh3" class="logo-img" onerror="markFail('lh3')" onload="markOk('lh3')">
-    <div class="status" id="status-lh3">⏳ Cargando...</div>
+<!-- EXACTAMENTE como en tienda.html -->
+<div class="hero" id="hero-el">
+  <div class="hero-content">
+    <h1 id="hero-title">Bienvenido</h1>
+    <p id="hero-desc">Descripción de la tienda</p>
   </div>
-
-  <h2>Método 2 — thumbnail (img tag)</h2>
-  <div class="test">
-    <div class="test-title">🔗 drive.google.com/thumbnail?id=ID&sz=w600</div>
-    <div class="test-url" id="url-thumb">—</div>
-    <img id="img-thumb" class="logo-img" onerror="markFail('thumb')" onload="markOk('thumb')">
-    <div class="status" id="status-thumb">⏳ Cargando...</div>
-  </div>
-
-  <h2>Método 3 — lh3 como CSS background</h2>
-  <div class="test">
-    <div class="test-title">🎨 background-image: url(lh3...)</div>
-    <div class="test-url" id="url-lh3css">—</div>
-    <div class="banner-css" id="banner-lh3css">Sin imagen</div>
-    <div class="status" id="status-lh3css">⏳ Verificando...</div>
-  </div>
-
-  <h2>Método 4 — thumbnail como CSS background</h2>
-  <div class="test">
-    <div class="test-title">🎨 background-image: url(thumbnail...)</div>
-    <div class="test-url" id="url-thumbcss">—</div>
-    <div class="banner-css" id="banner-thumbcss">Sin imagen</div>
-    <div class="status" id="status-thumbcss">⏳ Verificando...</div>
-  </div>
-
-  <hr class="divider">
-  <div id="conclusion" style="background:#fff;border:1.5px solid #e8e8e2;border-radius:12px;padding:14px">
-    <div style="font-size:12px;font-weight:700;margin-bottom:6px">📋 Resultado</div>
-    <div id="conclusion-text" style="font-size:13px;line-height:1.6;color:#333">Esperando resultados...</div>
-  </div>
-
 </div>
 
 <script>
-var results = { lh3: null, thumb: null, lh3css: null, thumbcss: null };
+/* ── EXACTAMENTE las funciones de tienda.html ── */
 
-function extractId(url) {
-  var m = url.match(/[?&]id=([\w-]+)/);
-  if (m) return m[1];
-  var m2 = url.match(/\/d\/([\w-]+)/);
-  if (m2) return m2[1];
-  return null;
+function fixImgUrl(url) {
+  if (!url) return '';
+  const m = url.match(/[?&]id=([\w-]+)/);
+  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+  return url;
 }
 
-function markOk(key) {
-  results[key] = true;
-  document.getElementById('status-' + key).textContent = '✅ CARGA CORRECTAMENTE';
-  document.getElementById('status-' + key).className = 'status ok';
-  updateConclusion();
+function applyColor(hex) {
+  document.documentElement.style.setProperty('--primary', hex);
 }
 
-function markFail(key) {
-  results[key] = false;
-  document.getElementById('status-' + key).textContent = '❌ NO CARGA';
-  document.getElementById('status-' + key).className = 'status fail';
-  updateConclusion();
+/* ── SIMULANDO cfg que viene de la sheet ── */
+/* Cambia estos valores por los reales de tu tienda  */
+var cfg = {
+  bannerUrl:    'PON_AQUI_URL_BANNER_DE_TU_SHEET',
+  logo:         'PON_AQUI_URL_LOGO_DE_TU_SHEET',
+  primaryColor: '#f97316',
+  description:  'Accesorios y gadgets'
+};
+var storeName = 'store 324';
+
+/* ── EXACTAMENTE el bloque window.load de tienda.html ── */
+if (cfg.primaryColor) applyColor(cfg.primaryColor);
+
+document.getElementById('hero-title').textContent = storeName;
+if (cfg.description) document.getElementById('hero-desc').textContent = cfg.description;
+
+// Banner hero — IGUAL que tienda.html
+if (cfg.bannerUrl) {
+  const heroEl = document.getElementById('hero-el');
+  heroEl.style.background = `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)), url(${fixImgUrl(cfg.bannerUrl)}) center/cover no-repeat`;
 }
 
-function checkCssBg(elId, statusId, key, url) {
-  var el = document.getElementById(elId);
-  el.style.backgroundImage = 'url(' + url + ')';
-  el.textContent = '';
-  // Verificar si cargó usando un img oculto
-  var tester = new Image();
-  tester.onload = function() { results[key] = true; document.getElementById(statusId).textContent = '✅ CARGA CORRECTAMENTE'; document.getElementById(statusId).className = 'status ok'; updateConclusion(); };
-  tester.onerror = function() { results[key] = false; document.getElementById(statusId).textContent = '❌ NO CARGA'; document.getElementById(statusId).className = 'status fail'; updateConclusion(); };
-  tester.src = url;
-}
-
-function updateConclusion() {
-  var done = Object.values(results).filter(function(v){ return v !== null; }).length;
-  if (done < 4) return;
-
-  var text = '';
-  if (results.lh3 && results.thumb) {
-    text = '✅ Ambos métodos (lh3 y thumbnail) funcionan en tu dispositivo con img tag.';
-  } else if (!results.lh3 && results.thumb) {
-    text = '⚠️ lh3 NO funciona en img tag — usa thumbnail. El panel debe usar thumbnail para <img>.';
-  } else if (results.lh3 && !results.thumb) {
-    text = '⚠️ thumbnail NO funciona — usa lh3. Verifica que el archivo sea público en Drive.';
-  } else {
-    text = '❌ Ningún método funciona con img tag. Verifica que el archivo esté compartido públicamente en Google Drive (cualquiera con el enlace puede verlo).';
-  }
-
-  if (results.lh3css) text += ' | CSS background con lh3: ✅';
-  else text += ' | CSS background con lh3: ❌';
-
-  document.getElementById('conclusion-text').textContent = text;
-}
-
-function runDebug() {
-  var url = document.getElementById('input-url').value.trim();
-  var id = extractId(url);
-
-  if (!id) {
-    alert('No se pudo extraer el ID de Drive. Asegúrate de pegar una URL válida de Google Drive.');
-    return;
-  }
-
-  var lh3url   = 'https://lh3.googleusercontent.com/d/' + id;
-  var thumburl = 'https://drive.google.com/thumbnail?id=' + id + '&sz=w600';
-
-  // Reset
-  results = { lh3: null, thumb: null, lh3css: null, thumbcss: null };
-  ['lh3','thumb','lh3css','thumbcss'].forEach(function(k){
-    var s = document.getElementById('status-'+k);
-    if (s) { s.textContent = '⏳ Cargando...'; s.className = 'status'; }
-  });
-  document.getElementById('conclusion-text').textContent = 'Esperando resultados...';
-  document.getElementById('results').style.display = 'block';
-
-  // Mostrar URLs
-  document.getElementById('url-lh3').textContent     = lh3url;
-  document.getElementById('url-thumb').textContent   = thumburl;
-  document.getElementById('url-lh3css').textContent  = lh3url;
-  document.getElementById('url-thumbcss').textContent= thumburl;
-
-  // Probar img tags
-  var imgLh3   = document.getElementById('img-lh3');
-  var imgThumb = document.getElementById('img-thumb');
-  imgLh3.src   = '';
-  imgThumb.src = '';
-  setTimeout(function(){
-    imgLh3.src   = lh3url;
-    imgThumb.src = thumburl;
-  }, 100);
-
-  // Probar CSS backgrounds
-  setTimeout(function(){
-    checkCssBg('banner-lh3css',  'status-lh3css',  'lh3css',  lh3url);
-    checkCssBg('banner-thumbcss','status-thumbcss','thumbcss', thumburl);
-  }, 200);
+// Logo — IGUAL que tienda.html
+if (cfg.logo) {
+  const heroContent = document.querySelector('.hero-content');
+  const logoEl = document.createElement('img');
+  logoEl.src = fixImgUrl(cfg.logo);
+  logoEl.alt = storeName;
+  logoEl.style.cssText = 'height:48px;margin-bottom:16px;border-radius:8px;display:block';
+  heroContent.insertBefore(logoEl, heroContent.firstChild);
 }
 </script>
+
 </body>
 </html>
