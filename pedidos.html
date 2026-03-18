@@ -3,83 +3,172 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Test Logo y Banner — código exacto de tienda</title>
+<title>Test Panel — Logo y Banner</title>
 <style>
-  body { font-family: sans-serif; background: #fafafa; margin: 0; }
+  body { font-family: sans-serif; background: #f4f4f0; padding: 16px; }
 
-  /* === EXACTAMENTE como en tienda.html === */
-  .hero {
-    background: #6366f1;
-    padding: 64px 20px;
-    color: #fff;
-  }
-  .hero h1 {
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 14px;
-  }
-  .hero p {
-    font-size: 16px;
-    opacity: .85;
-    margin-bottom: 28px;
-  }
+  .preview-card { border-radius: 12px; overflow: hidden; border: 1.5px solid #e8e8e2; background: #fff; margin-bottom: 20px; }
+  .preview-banner { height: 100px; background: #e0e7ff; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+  .preview-logo-wrap { padding: 0 14px; margin-top: -20px; position: relative; z-index: 1; }
+  .preview-logo { width: 40px; height: 40px; border-radius: 9px; border: 3px solid #fff; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+  .preview-info { padding: 8px 14px 14px; }
+  .preview-name { font-weight: 800; font-size: 15px; margin-bottom: 3px; }
+  .preview-desc { font-size: 12px; color: #888; }
+
+  .topbar { background: #fff; border-bottom: 1.5px solid #e8e8e2; padding: 0 16px; height: 54px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-radius: 10px; }
+  .store-logo-mini { width: 30px; height: 30px; border-radius: 8px; background: #6366f1; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .store-logo-mini img { width: 100%; height: 100%; object-fit: cover; }
+  .store-logo-mini span { font-size: 14px; font-weight: 700; color: #fff; }
+
+  .label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; margin: 14px 0 6px; }
+  .status { font-size: 12px; padding: 6px 12px; border-radius: 8px; margin-top: 8px; font-weight: 600; }
+  .ok   { background: #dcfce7; color: #166534; }
+  .fail { background: #fee2e2; color: #991b1b; }
 </style>
 </head>
 <body>
 
-<!-- EXACTAMENTE como en tienda.html -->
-<div class="hero" id="hero-el">
-  <div class="hero-content">
-    <h1 id="hero-title">Bienvenido</h1>
-    <p id="hero-desc">Descripción de la tienda</p>
+<h2 style="font-size:16px;font-weight:800;margin-bottom:16px">Test Panel — Logo y Banner</h2>
+
+<!-- TOPBAR igual que panel -->
+<div class="label">Topbar logo</div>
+<div class="topbar">
+  <div class="store-logo-mini" id="topbar-logo">
+    <span id="topbar-logo-letter">?</span>
+  </div>
+  <div style="font-weight:700;font-size:14px" id="topbar-name">Mi Tienda</div>
+</div>
+
+<!-- PREVIEW igual que panel -->
+<div class="label">Preview card</div>
+<div class="preview-card">
+  <div class="preview-banner" id="preview-banner">
+    <span style="font-size:28px;opacity:.4">🖼️</span>
+  </div>
+  <div class="preview-logo-wrap">
+    <div class="preview-logo" id="preview-logo">🏪</div>
+  </div>
+  <div class="preview-info">
+    <div class="preview-name" id="preview-name">Nombre de tu tienda</div>
+    <div class="preview-desc" id="preview-desc">Tu descripción aquí...</div>
   </div>
 </div>
 
-<script>
-/* ── EXACTAMENTE las funciones de tienda.html ── */
+<div id="status-logo"  class="status">⏳ Cargando logo...</div>
+<div id="status-banner" class="status">⏳ Cargando banner...</div>
 
+<script>
+/* ── STORE_CFG simulado — igual que llega del backend ── */
+var STORE_CFG = {
+  logo:         '',   // se llena desde el backend
+  bannerUrl:    '',   // se llena desde el backend
+  primaryColor: '#6366f1',
+  description:  'Descripción de prueba'
+};
+var storeName = 'Mi Tienda';
+
+/* ── fixImgUrl — IGUAL que tienda.html ── */
 function fixImgUrl(url) {
   if (!url) return '';
-  const m = url.match(/[?&]id=([\w-]+)/);
+  var m = url.match(/[?&]id=([\w-]+)/);
   if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
   return url;
 }
 
-function applyColor(hex) {
-  document.documentElement.style.setProperty('--primary', hex);
+/* ── renderStoreInfo — bloque logo y banner corregido ── */
+function renderStoreInfo() {
+
+  document.getElementById('topbar-name').textContent = storeName;
+  document.getElementById('topbar-logo-letter').textContent = storeName[0].toUpperCase();
+  document.getElementById('preview-name').textContent = storeName;
+  document.getElementById('preview-desc').textContent = STORE_CFG.description || '';
+
+  // ── LOGO ──
+  if (STORE_CFG.logo) {
+    var logoUrl = fixImgUrl(STORE_CFG.logo);
+
+    // topbar
+    var tl = document.getElementById('topbar-logo');
+    tl.innerHTML = '<img src="' + logoUrl + '" style="width:100%;height:100%;object-fit:cover" ' +
+      'onload="markOk(\'logo\')" onerror="markFail(\'logo\')">';
+
+    // preview — igual que tienda.html: img tag directo
+    var previewLogo = document.getElementById('preview-logo');
+    previewLogo.innerHTML = '<img src="' + logoUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:7px">';
+
+  } else {
+    document.getElementById('status-logo').textContent = '⚠️ STORE_CFG.logo está vacío';
+    document.getElementById('status-logo').className = 'status fail';
+  }
+
+  // ── BANNER ──
+  if (STORE_CFG.bannerUrl) {
+    var bannerUrl = fixImgUrl(STORE_CFG.bannerUrl);
+
+    // preview — igual que tienda.html: CSS background-image
+    var previewBanner = document.getElementById('preview-banner');
+    previewBanner.style.background = 'linear-gradient(rgba(0,0,0,.15),rgba(0,0,0,.15)), url(' + bannerUrl + ') center/cover no-repeat';
+    previewBanner.innerHTML = '';
+
+    // verificar carga con img oculto
+    var tester = new Image();
+    tester.onload  = function() { markOk('banner'); };
+    tester.onerror = function() { markFail('banner'); };
+    tester.src = bannerUrl;
+
+  } else {
+    document.getElementById('status-banner').textContent = '⚠️ STORE_CFG.bannerUrl está vacío';
+    document.getElementById('status-banner').className = 'status fail';
+  }
 }
 
-/* ── SIMULANDO cfg que viene de la sheet ── */
-/* Cambia estos valores por los reales de tu tienda  */
-var cfg = {
-  bannerUrl:    'PON_AQUI_URL_BANNER_DE_TU_SHEET',
-  logo:         'PON_AQUI_URL_LOGO_DE_TU_SHEET',
-  primaryColor: '#f97316',
-  description:  'Accesorios y gadgets'
-};
-var storeName = 'store 324';
-
-/* ── EXACTAMENTE el bloque window.load de tienda.html ── */
-if (cfg.primaryColor) applyColor(cfg.primaryColor);
-
-document.getElementById('hero-title').textContent = storeName;
-if (cfg.description) document.getElementById('hero-desc').textContent = cfg.description;
-
-// Banner hero — IGUAL que tienda.html
-if (cfg.bannerUrl) {
-  const heroEl = document.getElementById('hero-el');
-  heroEl.style.background = `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)), url(${fixImgUrl(cfg.bannerUrl)}) center/cover no-repeat`;
+function markOk(type) {
+  var el = document.getElementById('status-' + type);
+  el.textContent = '✅ ' + type + ' carga correctamente';
+  el.className = 'status ok';
+}
+function markFail(type) {
+  var el = document.getElementById('status-' + type);
+  el.textContent = '❌ ' + type + ' NO carga — verifica que el archivo sea público en Drive';
+  el.className = 'status fail';
 }
 
-// Logo — IGUAL que tienda.html
-if (cfg.logo) {
-  const heroContent = document.querySelector('.hero-content');
-  const logoEl = document.createElement('img');
-  logoEl.src = fixImgUrl(cfg.logo);
-  logoEl.alt = storeName;
-  logoEl.style.cssText = 'height:48px;margin-bottom:16px;border-radius:8px;display:block';
-  heroContent.insertBefore(logoEl, heroContent.firstChild);
+/* ── SIMULAR llegada de datos del backend ──
+   Reemplaza estas URLs con las reales de tu sheet
+   para probar antes de pegar en el panel          */
+function simularBackend(logoUrl, bannerUrl, nombre) {
+  STORE_CFG.logo      = logoUrl;
+  STORE_CFG.bannerUrl = bannerUrl;
+  storeName           = nombre || storeName;
+  renderStoreInfo();
 }
+
+/* Llama con tus URLs reales: */
+// simularBackend(
+//   'https://drive.google.com/file/d/TU_ID_LOGO/view',
+//   'https://drive.google.com/file/d/TU_ID_BANNER/view',
+//   'Nombre de tu tienda'
+// );
+
+/* O carga directo si el backend está disponible: */
+window.addEventListener('load', function() {
+  var backend = new URLSearchParams(location.search).get('backend');
+  var storeId = new URLSearchParams(location.search).get('store');
+  if (backend && storeId) {
+    fetch(backend + '?action=store.info&storeId=' + storeId)
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.ok && d.store) {
+          STORE_CFG = d.store.config || {};
+          storeName = d.store.name  || 'Mi Tienda';
+          renderStoreInfo();
+        }
+      })
+      .catch(function(){ renderStoreInfo(); });
+  } else {
+    renderStoreInfo();
+  }
+});
 </script>
 
 </body>
