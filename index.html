@@ -634,6 +634,8 @@ let TOKEN     = localStorage.getItem('ld_token')  || '';
 let STORE_ID  = localStorage.getItem('ld_store')  || '';
 let USER_ROLE = localStorage.getItem('ld_role')   || '';
 let STORE_CFG = {};
+_logoCurrentUrl   = STORE_CFG.logo      || '';
+_bannerCurrentUrl = STORE_CFG.bannerUrl || '';     
 let ALL_PRODS=[], ALL_ORDERS=[], ALL_CUSTOMERS=[], ALL_STAFF=[];
 let PENDING_IMG_B64='', PENDING_IMG_MIME='image/jpeg', PENDING_IMG_NAME='';
 let ED = { logob64:'', logomime:'image/jpeg', logoname:'', bannerb64:'', bannermime:'image/jpeg', bannername:'' };
