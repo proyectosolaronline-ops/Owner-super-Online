@@ -516,7 +516,18 @@ tr:last-child td{border-bottom:none}
     </div>
 
   </div>
-
+  
+<!-- CARD: Editor de Landing -->
+<div class="settings-card">
+  <div class="settings-card-title">🎨 Apariencia de la landing</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">
+    Edita el nombre, descripción, logo, banner y colores de tu tienda pública con vista previa en tiempo real.
+  </p>
+  <button class="btn primary full" onclick="openLandingEditor()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    Editar landing
+  </button>
+</div>
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav" id="bottom-nav">
     <div class="nav-item active" onclick="showPanel('dashboard')" id="nav-dashboard">
@@ -829,7 +840,10 @@ function syncEdTextColor(val, source) {
   else if (/^#[0-9a-fA-F]{6}$/.test(val)) document.getElementById('ed-text-color').value = val;
   updatePreview();
 }
-
+function openLandingEditor() {
+  var url = 'editor-landing.html?backend=' + encodeURIComponent(BACKEND);
+  window.open(url, '_blank');
+}
 function updatePreview() {
   var name      = document.getElementById('ed-name').value || 'Nombre de tu tienda';
   var desc      = document.getElementById('ed-desc').value || 'Tu descripción aquí...';
