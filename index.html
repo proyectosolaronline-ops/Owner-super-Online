@@ -776,6 +776,8 @@ function renderStoreInfo(store) {
   document.getElementById('topbar-logo-letter').textContent = name[0].toUpperCase();
   document.getElementById('sb-name-d').textContent = name;
   STORE_CFG = store.config || {};
+  _logoCurrentUrl   = STORE_CFG.logo      || ''; 
+  _bannerCurrentUrl = STORE_CFG.bannerUrl || '';  
   // Settings
   document.getElementById('cfg-wa').value       = STORE_CFG.whatsapp||'';
   document.getElementById('cfg-currency').value = STORE_CFG.currency||'MXN';
