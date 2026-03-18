@@ -955,10 +955,8 @@ function renderRecentOrders() {
 // ── IMAGE URL FIX ──────────────────────────────────────────────
 function fixImgUrl(url) {
   if (!url) return '';
-  // Formato ?id=XXXX o &id=XXXX
   var m = url.match(/[?&]id=([\w-]+)/);
   if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w600';
-  // Formato /d/XXXX/
   var m2 = url.match(/\/d\/([\w-]+)/);
   if (m2) return 'https://drive.google.com/thumbnail?id=' + m2[1] + '&sz=w600';
   return url;
