@@ -877,15 +877,24 @@ function updatePreview() {
 }
 
 async function saveAppearance() {
-  var btn = document.getElementById('btn-save-appearance');
-  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
-  var color     = document.getElementById('ed-color-hex').value || document.getElementById('ed-color').value;
-  var textColor = document.getElementById('ed-text-color-hex').value || document.getElementById('ed-text-color').value;
+  // ── VALIDACIÓN ──────────────────────────────────────────
   var name      = document.getElementById('ed-name').value.trim();
   var desc      = document.getElementById('ed-desc').value.trim();
+  var color     = document.getElementById('ed-color-hex').value.trim();
+  var textColor = document.getElementById('ed-text-color-hex').value.trim();
+  var hexRegex  = /^#[0-9a-fA-F]{6}$/;
+
+  if (!name)                    { toast('El nombre de la tienda es obligatorio', 'error'); return; }
+  if (!desc)                    { toast('La descripción / slogan es obligatoria', 'error'); return; }
+  if (!hexRegex.test(color))    { toast('El color principal no es válido (ej: #6366f1)', 'error'); return; }
+  if (!hexRegex.test(textColor)){ toast('El color de texto no es válido (ej: #ffffff)', 'error'); return; }
+  // ────────────────────────────────────────────────────────
+
+  var btn = document.getElementById('btn-save-appearance');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
 
   // ── LOGO ──
-  var logoUrl = _logoCurrentUrl;  // conserva lo que había por defecto
+  var logoUrl = _logoCurrentUrl;
   if (ED.logob64) {
     var r = await api('image.upload', { imageBase64:ED.logob64, mimeType:ED.logomime, fileName:ED.logoname||'logo.jpg' });
     if (r && r.imageUrl) {
@@ -896,6 +905,38 @@ async function saveAppearance() {
     } else { toast('Error subiendo logo','error'); btn.disabled=false; btn.textContent='Guardar'; return; }
   }
 
+  // ── BANNER ──
+  var bannerUrl = _bannerCurrentUrl;
+  if (ED.bannerb64) {
+    var r2 = await api('image.upload', { imageBase64:ED.bannerb64, mimeType:ED.bannermime, fileName:ED.bannername||'banner.jpg' });
+    if (r2 && r2.imageUrl) {
+      bannerUrl = r2.imageUrl;
+      _bannerCurrentUrl = bannerUrl;
+    } else { toast('Error subiendo banner','error'); btn.disabled=false; btn.textContent='Guardar'; return; }
+  }
+
+  var config = {
+    primaryColor:       color,
+    textColor:          textColor,
+    description:        desc,
+    logo:               logoUrl,
+    bannerUrl:          bannerUrl,
+    whatsapp:           STORE_CFG.whatsapp||'',
+    currency:           STORE_CFG.currency||'MXN',
+    emailNotifications: STORE_CFG.emailNotifications!==false
+  };
+
+  var res = await api('store.settings.save', { config:config });
+  btn.disabled=false; btn.textContent='Guardar';
+  if (!res) return;
+  STORE_CFG = Object.assign({}, STORE_CFG, config);
+  ED.logob64=''; ED.bannerb64='';
+  if (name) {
+    document.getElementById('topbar-name').textContent = name;
+    document.getElementById('sb-name-d').textContent   = name;
+  }
+  toast('¡Apariencia guardada! 🎨','success');
+}
   // ── BANNER ──
   var bannerUrl = _bannerCurrentUrl;  // conserva lo que había por defecto
   if (ED.bannerb64) {
