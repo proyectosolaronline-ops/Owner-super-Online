@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Clientes — LandingKit</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#f4f4f0;--surface:#fff;--surface2:#f9f9f6;--border:#e8e8e2;
+  --accent:#1a1a1a;--accent2:#6366f1;--text:#1a1a1a;--muted:#888;
+  --danger:#ef4444;--warn:#f59e0b;--success:#16a34a;
+  --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── LOGIN ── */
+.login-screen{position:fixed;inset:0;background:var(--accent);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px;overflow-y:auto}
+.login-wrap{width:100%;max-width:400px;padding:20px 0}
+.login-brand{font-family:var(--font-d);font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#555;margin-bottom:24px;text-align:center}
+.login-brand span{color:var(--accent2)}
+.login-tabs{display:flex;background:#111;border-radius:10px;padding:4px;margin-bottom:16px}
+.ltab{flex:1;padding:11px;text-align:center;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;color:#555;transition:all .15s}
+.ltab.active{background:var(--accent2);color:#fff}
+.login-card{background:var(--bg);border-radius:20px;padding:28px 24px}
+.login-title{font-family:var(--font-d);font-size:22px;font-weight:800;margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5}
+.lfield{margin-bottom:14px}
+.lfield label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.lfield input,.lfield textarea{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:var(--font-b);background:var(--surface);color:var(--text)}
+.lfield textarea{resize:none;min-height:80px;font-family:var(--mono);font-size:12px}
+.lfield input:focus,.lfield textarea:focus{outline:none;border-color:var(--accent2)}
+.lerr{font-size:13px;color:var(--danger);margin-bottom:12px;padding:10px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;display:none}
+.lbtn{width:100%;padding:15px;background:var(--accent2);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-b)}
+.lbtn:disabled{opacity:.5}
+
+/* ── APP SHELL ── */
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.store-logo-mini{width:30px;height:30px;border-radius:8px;background:var(--accent2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.store-logo-mini img{width:100%;height:100%;object-fit:cover}
+.store-logo-mini span{font-size:14px;font-weight:700;color:#fff}
+.topbar-name{font-family:var(--font-d);font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.topbar-right{display:flex;align-items:center;gap:6px}
+.content{flex:1;padding:16px}
+
+/* ── BOTONES ── */
+.btn{padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-b);display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.btn.sm{padding:7px 12px;font-size:12px;border-radius:8px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn:disabled{opacity:.4;pointer-events:none}
+
+/* ── TABLA ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-title{font-family:var(--font-d);font-size:14px;font-weight:700}
+.tbl-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1.5px solid var(--border);background:var(--surface2)}
+td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+
+/* ── MODAL DETALLE ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;padding:0}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
+.modal-hdr{padding:16px 20px 14px;border-bottom:1.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-family:var(--font-d);font-size:15px;font-weight:700}
+.modal-body{padding:20px}
+.modal-foot{padding:14px 20px;border-top:1.5px solid var(--border);display:flex;gap:8px}
+.modal-foot .btn{flex:1;justify-content:center}
+
+/* ── CONFIRMACIÓN ── */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:center;justify-content:center;padding:20px}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:var(--surface);border-radius:16px;padding:24px;max-width:320px;width:100%;text-align:center}
+.confirm-icon{font-size:36px;margin-bottom:12px}
+.confirm-title{font-family:var(--font-d);font-size:16px;font-weight:800;margin-bottom:6px}
+.confirm-msg{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.confirm-btns{display:flex;gap:8px}
+.confirm-btns .btn{flex:1;justify-content:center}
+
+/* ── SESIÓN ── */
+.session-warn{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.3);align-items:center;gap:10px;border:1.5px solid #333}
+.session-warn.show{display:flex}
+.session-warn-btn{background:var(--accent2);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-b)}
+
+/* ── MISC ── */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-ico{font-size:36px;margin-bottom:10px}
+.empty h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.empty p{font-size:13px}
+.spinner{width:17px;height:17px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);border-radius:10px;padding:11px 18px;font-size:13px;font-weight:600;z-index:9999;display:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+#toast.success{background:var(--success);color:#fff}
+#toast.error{background:var(--danger);color:#fff}
+#toast.warn{background:var(--warn);color:#fff}
+
+/* ── BÚSQUEDA Y STATS ── */
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.stat-val{font-family:var(--font-d);font-size:24px;font-weight:800;line-height:1;color:var(--accent2)}
+
+@media(min-width:768px){
+  .overlay{align-items:center}
+  .modal{border-radius:14px;max-width:520px;width:100%}
+  .content{padding:24px;max-width:960px;margin:0 auto}
+  .topbar{padding:0 24px}
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-wrap">
+    <div class="login-brand">Landing<span>Kit</span> — Clientes</div>
+    <div class="login-tabs">
+      <div class="ltab active" id="tab-owner" onclick="switchLoginTab('owner')">Dueño</div>
+      <div class="ltab" id="tab-staff" onclick="switchLoginTab('staff')">Operador</div>
+    </div>
+    <div class="login-card">
+      <div id="login-owner-view">
+        <div class="login-title">Accede a tu tienda</div>
+        <div class="login-sub">Pega el código LK-... que recibiste por WhatsApp o email.</div>
+        <div class="lfield"><label>Código de acceso</label><textarea id="l-code" placeholder="LK-eyJzdG9yZUlk..."></textarea></div>
+        <div class="lerr" id="l-err-owner"></div>
+        <button class="lbtn" id="l-btn-owner" onclick="doOwnerLogin()">Ingresar</button>
+      </div>
+      <div id="login-staff-view" style="display:none">
+        <div class="login-title">Acceso operador</div>
+        <div class="login-sub">Usa el email y contraseña que te dio el dueño.</div>
+        <div class="lfield"><label>ID de la tienda</label><input id="l-staff-storeid" placeholder="store_abc123..."/></div>
+        <div class="lfield"><label>Email</label><input type="email" id="l-staff-email" placeholder="tu@email.com"/></div>
+        <div class="lfield"><label>Contraseña</label><input type="password" id="l-staff-pass" placeholder="••••••••"/></div>
+        <div class="lerr" id="l-err-staff"></div>
+        <button class="lbtn" id="l-btn-staff" onclick="doStaffLogin()">Ingresar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app" style="display:none">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="store-logo-mini" id="topbar-logo"><span id="topbar-logo-letter">?</span></div>
+      <div class="topbar-name" id="topbar-name">Mi Tienda</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn sm ghost" onclick="loadCustomers()" title="Actualizar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      </button>
+      <button class="btn sm ghost" onclick="confirmLogout()" title="Salir">↩</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="sec-hdr">
+      <div class="sec-title">Clientes</div>
+    </div>
+
+    <!-- Stats rápidas -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total clientes</div>
+        <div class="stat-val" id="stat-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Este mes</div>
+        <div class="stat-val" id="stat-month">—</div>
+      </div>
+    </div>
+
+    <!-- Búsqueda -->
+    <input
+      style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-b);background:var(--surface);color:var(--text);margin-bottom:14px"
+      placeholder="Buscar por nombre o email..."
+      id="search-customers"
+      oninput="filterCustomers()"
+    >
+
+    <!-- Tabla -->
+    <div class="tbl-wrap" id="customers-table">
+      <div class="empty"><div class="empty-ico">⏳</div><h3>Cargando...</h3></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETALLE CLIENTE -->
+<div class="overlay" id="modal-customer">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="customer-modal-title">Cliente</div>
+      <button class="btn ghost sm" onclick="closeModal('customer')">✕</button>
+    </div>
+    <div class="modal-body" id="customer-modal-body"></div>
+    <div class="modal-foot">
+      <button class="btn full" onclick="closeModal('customer')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMACIÓN -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon">⚠️</div>
+    <div class="confirm-title" id="confirm-title">¿Estás seguro?</div>
+    <div class="confirm-msg" id="confirm-msg">Esta acción no se puede deshacer.</div>
+    <div class="confirm-btns">
+      <button class="btn" onclick="resolveConfirm(false)">Cancelar</button>
+      <button class="btn danger" id="confirm-ok-btn" onclick="resolveConfirm(true)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- AVISO SESIÓN -->
+<div class="session-warn" id="session-warn">
+  <span>⏱ Tu sesión expira en 2 minutos</span>
+  <button class="session-warn-btn" onclick="extendSession()">Continuar</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ─────────────────────────────────────────
+   ESTADO GLOBAL
+───────────────────────────────────────── */
+// Content-Type 'text/plain' es intencional para evitar preflight CORS en Google Apps Script
+const BACKEND = (new URLSearchParams(location.search).get('backend')) || localStorage.getItem('ld_backend') || '';
+let TOKEN       = localStorage.getItem('ld_token')  || '';
+let STORE_ID    = localStorage.getItem('ld_store')  || '';
+let USER_ROLE   = localStorage.getItem('ld_role')   || '';
+let STORE_CFG   = {};
+let ALL_CUSTOMERS = [];
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+window.addEventListener('load', function() {
+  var urlStore = new URLSearchParams(location.search).get('store');
+  if (urlStore) document.getElementById('l-staff-storeid').value = urlStore;
+  if (TOKEN && STORE_ID) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = '';
+    loadStoreInfo();
+    loadCustomers();
+  }
+});
+
+/* ─────────────────────────────────────────
+   LOGIN
+───────────────────────────────────────── */
+function switchLoginTab(tab) {
+  document.getElementById('tab-owner').classList.toggle('active', tab==='owner');
+  document.getElementById('tab-staff').classList.toggle('active', tab==='staff');
+  document.getElementById('login-owner-view').style.display = tab==='owner' ? '' : 'none';
+  document.getElementById('login-staff-view').style.display = tab==='staff' ? '' : 'none';
+}
+
+async function doOwnerLogin() {
+  var code = document.getElementById('l-code').value.trim();
+  var btn  = document.getElementById('l-btn-owner');
+  document.getElementById('l-err-owner').style.display = 'none';
+  if (!code)    { showLErr('owner','Pega tu código LK-...'); return; }
+  if (!BACKEND) { showLErr('owner','Falta URL del backend'); return; }
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Verificando...';
+  try {
+    var data = await postAPI({ action:'owner.login', accessCode: code });
+    if (!data.ok || !data.token) { showLErr('owner', data.error||'Código inválido'); return; }
+    saveSession(data.token, data.storeId, 'owner', data.name, data.ownerEmail);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = '';
+    loadStoreInfo();
+    loadCustomers();
+  } catch(e) { showLErr('owner','Error: '+e.message); }
+  finally { btn.disabled=false; btn.textContent='Ingresar'; }
+}
+
+async function doStaffLogin() {
+  var storeId = document.getElementById('l-staff-storeid').value.trim();
+  var email   = document.getElementById('l-staff-email').value.trim();
+  var pass    = document.getElementById('l-staff-pass').value;
+  var btn     = document.getElementById('l-btn-staff');
+  document.getElementById('l-err-staff').style.display = 'none';
+  if (!storeId||!email||!pass) { showLErr('staff','Completa todos los campos'); return; }
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Verificando...';
+  try {
+    var data = await postAPI({ action:'staff.login', storeId:storeId, email:email, password:pass });
+    if (!data.ok || !data.token) { showLErr('staff', data.error||'Credenciales inválidas'); return; }
+    saveSession(data.token, data.storeId, 'staff', data.name, email);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = '';
+    loadStoreInfo();
+    loadCustomers();
+  } catch(e) { showLErr('staff','Error: '+e.message); }
+  finally { btn.disabled=false; btn.textContent='Ingresar'; }
+}
+
+function saveSession(token, storeId, role, name, email) {
+  TOKEN=token; STORE_ID=storeId; USER_ROLE=role;
+  localStorage.setItem('ld_token',   token);
+  localStorage.setItem('ld_store',   storeId);
+  localStorage.setItem('ld_role',    role);
+  if (BACKEND) localStorage.setItem('ld_backend', BACKEND);
+  updateTopbar(name);
+}
+
+function showLErr(type, msg) {
+  var el = document.getElementById('l-err-'+type);
+  el.textContent=msg; el.style.display='block';
+  document.getElementById('l-btn-'+type).disabled=false;
+  document.getElementById('l-btn-'+type).textContent='Ingresar';
+}
+
+/* ─────────────────────────────────────────
+   API
+───────────────────────────────────────── */
+async function postAPI(payload) {
+  var backend = BACKEND || localStorage.getItem('ld_backend');
+  var res = await fetch(backend, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+  return res.json();
+}
+
+async function api(action, data) {
+  data = data || {};
+  try {
+    var payload = Object.assign({ action:action, storeId:STORE_ID, token:TOKEN }, data);
+    var json = await postAPI(payload);
+    if (json.error) throw new Error(json.error);
+    return json;
+  } catch(e) { toast(e.message,'error'); return null; }
+}
+
+/* ─────────────────────────────────────────
+   STORE INFO
+───────────────────────────────────────── */
+function fixImgUrl(url) {
+  if (!url) return '';
+  var m = url.match(/[?&]id=([\w-]+)/);
+  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+  var m2 = url.match(/\/d\/([\w-]+)/);
+  if (m2) return 'https://lh3.googleusercontent.com/d/' + m2[1];
+  return url;
+}
+
+async function loadStoreInfo() {
+  var info = await api('store.info');
+  if (!info || !info.store) return;
+  var store = info.store;
+  var name = store.name || 'Mi Tienda';
+  var rawCfg = store.config || {};
+  STORE_CFG = (typeof rawCfg === 'string') ? JSON.parse(rawCfg) : rawCfg;
+  updateTopbar(name);
+  if (STORE_CFG.logo) {
+    document.getElementById('topbar-logo').innerHTML = '<img src="'+fixImgUrl(STORE_CFG.logo)+'" style="width:100%;height:100%;object-fit:cover">';
+  }
+}
+
+function updateTopbar(name) {
+  var n = name || 'Mi Tienda';
+  document.getElementById('topbar-name').textContent = n;
+  document.getElementById('topbar-logo-letter').textContent = n[0].toUpperCase();
+}
+
+/* ─────────────────────────────────────────
+   CLIENTES — CARGA Y RENDER
+───────────────────────────────────────── */
+async function loadCustomers() {
+  document.getElementById('customers-table').innerHTML =
+    '<div class="empty"><div class="empty-ico">⏳</div><h3>Cargando...</h3></div>';
+  var res = await api('customer.list');
+  if (!res) { renderCustomers([]); return; }
+  ALL_CUSTOMERS = res.customers || [];
+  renderStats(ALL_CUSTOMERS);
+  renderCustomers(ALL_CUSTOMERS);
+}
+
+function renderStats(customers) {
+  document.getElementById('stat-total').textContent = customers.length;
+  var now = new Date();
+  var thisMonth = customers.filter(function(c){
+    if (!c.createdAt) return false;
+    var d = new Date(c.createdAt);
+    return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+  }).length;
+  document.getElementById('stat-month').textContent = thisMonth;
+}
+
+function renderCustomers(customers) {
+  var wrap = document.getElementById('customers-table');
+  if (!customers.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-ico">👤</div><h3>Sin clientes</h3><p>Aún no hay clientes registrados</p></div>';
+    return;
+  }
+  wrap.innerHTML =
+    '<table>' +
+      '<thead><tr>' +
+        '<th>Nombre</th>' +
+        '<th>Email</th>' +
+        '<th>Registro</th>' +
+        '<th></th>' +
+      '</tr></thead>' +
+      '<tbody>' +
+        customers.map(function(c) {
+          var fecha = c.createdAt ? new Date(c.createdAt).toLocaleDateString('es-MX') : '—';
+          return '<tr>' +
+            '<td style="font-weight:600">'+esc(c.name||'—')+'</td>' +
+            '<td style="font-size:12px;color:var(--muted)">'+esc(c.email||'—')+'</td>' +
+            '<td style="font-size:12px;color:var(--muted)">'+fecha+'</td>' +
+            '<td><button class="btn sm ghost" onclick="openCustomerDetail(\''+esc(c.customerId||c.email)+'\')">Ver</button></td>' +
+          '</tr>';
+        }).join('') +
+      '</tbody>' +
+    '</table>';
+}
+
+function filterCustomers() {
+  var q = document.getElementById('search-customers').value.toLowerCase();
+  var filtered = q
+    ? ALL_CUSTOMERS.filter(function(c){
+        return (c.name||'').toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q);
+      })
+    : ALL_CUSTOMERS;
+  renderCustomers(filtered);
+}
+
+/* ─────────────────────────────────────────
+   DETALLE CLIENTE
+───────────────────────────────────────── */
+function openCustomerDetail(id) {
+  // Buscar por customerId o por email como fallback
+  var c = ALL_CUSTOMERS.find(function(x){ return (x.customerId||x.email)===id; });
+  if (!c) return;
+
+  document.getElementById('customer-modal-title').textContent = c.name || 'Cliente';
+
+  var fecha = c.createdAt ? new Date(c.createdAt).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}) : '—';
+
+  document.getElementById('customer-modal-body').innerHTML =
+    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">' +
+      '<div style="width:52px;height:52px;border-radius:50%;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--accent2);flex-shrink:0">' +
+        (c.name||'?')[0].toUpperCase() +
+      '</div>' +
+      '<div>' +
+        '<div style="font-family:var(--font-d);font-size:16px;font-weight:800">'+esc(c.name||'—')+'</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px">Registrado el '+fecha+'</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:grid;gap:12px">' +
+      infoRow('📧 Email',    c.email   || '—') +
+      infoRow('📱 Teléfono', c.phone   || '—') +
+      infoRow('🏠 Dirección',c.address || '—') +
+      (c.notes ? infoRow('📝 Notas', c.notes) : '') +
+    '</div>';
+
+  openModal('customer');
+}
+
+function infoRow(label, value) {
+  return '<div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px">' +
+    '<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">'+label+'</div>' +
+    '<div style="font-size:13px;font-weight:500">'+esc(value)+'</div>' +
+  '</div>';
+}
+
+/* ─────────────────────────────────────────
+   MODAL & CONFIRM
+───────────────────────────────────────── */
+function openModal(id)  { document.getElementById('modal-'+id).classList.add('open'); }
+function closeModal(id) { document.getElementById('modal-'+id).classList.remove('open'); }
+
+document.querySelectorAll('.overlay').forEach(function(o){
+  o.addEventListener('click', function(e){ if(e.target===o) o.classList.remove('open'); });
+});
+
+var _confirmResolve = null;
+
+function showConfirm(icon, title, msg, okLabel, onConfirm) {
+  document.getElementById('confirm-icon').textContent   = icon    || '⚠️';
+  document.getElementById('confirm-title').textContent  = title   || '¿Estás seguro?';
+  document.getElementById('confirm-msg').textContent    = msg     || 'Esta acción no se puede deshacer.';
+  document.getElementById('confirm-ok-btn').textContent = okLabel || 'Confirmar';
+  _confirmResolve = onConfirm || null;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+function resolveConfirm(confirmed) {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  if (confirmed && typeof _confirmResolve === 'function') _confirmResolve();
+  _confirmResolve = null;
+}
+
+function confirmLogout() {
+  showConfirm('↩', 'Cerrar sesión', '¿Seguro que quieres salir?', 'Salir', logout);
+}
+
+/* ─────────────────────────────────────────
+   UTILIDADES
+───────────────────────────────────────── */
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function toast(msg, type) {
+  type = type || 'success';
+  var el = document.getElementById('toast');
+  el.textContent=msg; el.className=type; el.style.display='block';
+  clearTimeout(el._t); el._t = setTimeout(function(){ el.style.display='none'; }, 3500);
+}
+
+/* ─────────────────────────────────────────
+   SESIÓN: INACTIVIDAD + AVISO PREVIO
+───────────────────────────────────────── */
+var _inactWarn = null, _inactLogout = null;
+
+function resetInactTimer() {
+  clearTimeout(_inactWarn); clearTimeout(_inactLogout);
+  hideSessionWarn();
+  _inactWarn = setTimeout(function(){
+    showSessionWarn();
+    _inactLogout = setTimeout(function(){ hideSessionWarn(); logout(); }, 2*60*1000);
+  }, 28*60*1000);
+}
+
+function showSessionWarn() { document.getElementById('session-warn').classList.add('show'); }
+function hideSessionWarn() { document.getElementById('session-warn').classList.remove('show'); }
+function extendSession()   { resetInactTimer(); toast('Sesión extendida ✅','success'); }
+
+['click','touchstart','keypress','scroll'].forEach(function(e){
+  document.addEventListener(e, resetInactTimer, true);
+});
+resetInactTimer();
+
+function logout() {
+  ['ld_token','ld_store','ld_role','ld_backend'].forEach(function(k){ localStorage.removeItem(k); });
+  location.reload();
+}
+</script>
+</body>
+</html>
