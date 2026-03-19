@@ -275,7 +275,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    ESTADO GLOBAL
 ───────────────────────────────────────── */
 // Content-Type 'text/plain' es intencional para evitar preflight CORS en Google Apps Script
-const BACKEND = (new URLSearchParams(location.search).get('backend')) || localStorage.getItem('ld_backend') || '';
+const BACKEND = (new URLSearchParams(location.search).get('backend')) || localStorage.getItem('ld_backend') || 'https://script.google.com/macros/s/AKfycbxrdW7sLSiJNq_XF_xDjDgBl2rJppwwoRsEe-mNE8G-2BWOcI7DpyJpQYsyN8M-x-I/exec';
 let TOKEN     = localStorage.getItem('ld_token')  || '';
 let STORE_ID  = localStorage.getItem('ld_store')  || '';
 let USER_ROLE = localStorage.getItem('ld_role')   || '';
