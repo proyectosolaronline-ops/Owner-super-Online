@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mensajes masivos</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
+:root{
+  --bg:#f4f4f0;--surface:#fff;--surface2:#f9f9f6;--border:#e8e8e2;
+  --accent2:#6366f1;--text:#1a1a1a;--muted:#888;
+  --success:#16a34a;--danger:#ef4444;--warn:#f59e0b;
+  --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
+
+.no-session{position:fixed;inset:0;background:#1a1a1a;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:24px;text-align:center}
+.no-session.show{display:flex}
+.no-session-title{font-family:var(--font-d);font-size:18px;font-weight:800;color:#fff}
+.no-session-btn{padding:12px 24px;background:var(--accent2);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
+
+.app{display:none;flex-direction:column;min-height:100vh}
+.app.visible{display:flex}
+
+.topbar{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--border);padding:0 16px;height:54px;display:flex;align-items:center;gap:10px}
+.topbar-title{font-family:var(--font-d);font-size:15px;font-weight:800;flex:1}
+.btn{padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--text);font-family:var(--font-b);display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.btn.wa{background:#25d366;color:#fff;border-color:#25d366}
+.btn.email{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn.sm{padding:7px 12px;font-size:12px;border-radius:8px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.full{width:100%}
+.btn:disabled{opacity:.4;pointer-events:none}
+
+.content{padding:16px;display:flex;flex-direction:column;gap:16px}
+
+.card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-hdr{padding:14px 16px;border-bottom:1px solid var(--border);font-family:var(--font-d);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:16px;display:flex;flex-direction:column;gap:12px}
+
+/* Productos */
+.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.prod-item{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s;position:relative}
+.prod-item.selected{border-color:var(--accent2);box-shadow:0 0 0 2px var(--accent2)}
+.prod-item-img{aspect-ratio:1;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden}
+.prod-item-img img{width:100%;height:100%;object-fit:cover}
+.prod-item-body{padding:8px 10px}
+.prod-item-name{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prod-item-price{font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--accent2)}
+.prod-check{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--accent2);color:#fff;font-size:12px;display:none;align-items:center;justify-content:center;font-weight:700}
+.prod-item.selected .prod-check{display:flex}
+
+/* Mensaje */
+.msg-textarea{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-b);resize:none;min-height:100px;color:var(--text)}
+.msg-textarea:focus{outline:none;border-color:var(--accent2)}
+.plantilla-chips{display:flex;gap:8px;flex-wrap:wrap}
+.plantilla-chip{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .15s}
+.plantilla-chip:hover{border-color:var(--accent2);color:var(--accent2)}
+
+/* Preview */
+.preview-msg{background:#dcfce7;border-radius:12px 12px 0 12px;padding:14px;font-size:13px;line-height:1.6;color:#166534;white-space:pre-wrap;word-break:break-word}
+.preview-prod{display:flex;gap:10px;align-items:center;background:#f9f9f6;border-radius:8px;padding:8px;margin-top:6px}
+.preview-prod-img{width:40px;height:40px;border-radius:6px;background:#f3f4f6;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+.preview-prod-img img{width:100%;height:100%;object-fit:cover}
+
+/* PDF preview */
+.pdf-preview{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:16px}
+.pdf-preview-title{font-family:var(--font-d);font-size:16px;font-weight:800;margin-bottom:12px;color:var(--text)}
+.pdf-prod-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.pdf-prod-row:last-child{border-bottom:none}
+.pdf-prod-img{width:48px;height:48px;border-radius:8px;background:#f3f4f6;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px}
+.pdf-prod-img img{width:100%;height:100%;object-fit:cover}
+
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent2);color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:30px;color:var(--muted);font-size:13px}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);border-radius:10px;padding:11px 18px;font-size:13px;font-weight:600;z-index:9999;display:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+#toast.success{background:var(--success);color:#fff}
+#toast.error{background:var(--danger);color:#fff}
+</style>
+</head>
+<body>
+
+<div class="no-session" id="no-session">
+  <div class="no-session-title">Sesion no encontrada</div>
+  <button class="no-session-btn" onclick="history.back()">Volver al panel</button>
+</div>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-title">Mensajes masivos</div>
+    <button class="btn ghost sm" onclick="history.back()">Panel</button>
+  </div>
+
+  <div class="content">
+
+    <!-- PASO 1: Seleccionar productos -->
+    <div class="card">
+      <div class="card-hdr">
+        <span><span class="step-num">1</span> &nbsp;Selecciona productos</span>
+        <span id="sel-count" style="color:var(--accent2);font-size:12px">0 seleccionados</span>
+      </div>
+      <div class="card-body">
+        <input id="search-prods" placeholder="Buscar producto..." oninput="renderProds()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font-b)">
+        <div class="prod-grid" id="prods-grid"><div class="empty"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- PASO 2: Mensaje -->
+    <div class="card">
+      <div class="card-hdr"><span class="step-num">2</span> &nbsp;Escribe el mensaje</div>
+      <div class="card-body">
+        <div class="plantilla-chips">
+          <div class="plantilla-chip" onclick="usarPlantilla('promo')">Promocion</div>
+          <div class="plantilla-chip" onclick="usarPlantilla('nuevo')">Producto nuevo</div>
+          <div class="plantilla-chip" onclick="usarPlantilla('oferta')">Oferta limitada</div>
+          <div class="plantilla-chip" onclick="usarPlantilla('saludo')">Saludo</div>
+        </div>
+        <textarea class="msg-textarea" id="msg-texto" placeholder="Escribe tu mensaje aqui..." oninput="actualizarPreview()"></textarea>
+      </div>
+    </div>
+
+    <!-- PASO 3: Preview -->
+    <div class="card" id="preview-card" style="display:none">
+      <div class="card-hdr"><span class="step-num">3</span> &nbsp;Vista previa del mensaje</div>
+      <div class="card-body">
+        <div class="preview-msg" id="preview-msg"></div>
+        <div id="preview-prods"></div>
+      </div>
+    </div>
+
+    <!-- PASO 4: Enviar -->
+    <div class="card">
+      <div class="card-hdr"><span class="step-num">4</span> &nbsp;Generar y enviar</div>
+      <div class="card-body">
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;background:var(--surface2);border-radius:8px;padding:12px">
+          Se generara un PDF con los productos seleccionados. Luego abriras WhatsApp o correo con el mensaje listo para enviarlo a tu lista de difusion.
+        </div>
+        <button class="btn full" id="btn-pdf" onclick="generarPDF()" style="background:#1a1a1a;color:#fff;border-color:#1a1a1a">Generar PDF del catalogo</button>
+        <button class="btn wa full" id="btn-wa" onclick="enviarWA()" disabled>Abrir WhatsApp con mensaje</button>
+        <button class="btn email full" id="btn-email" onclick="enviarEmail()" disabled>Enviar por Email a clientes</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+const BACKEND  = localStorage.getItem('ld_backend') || '';
+const STORE_ID = localStorage.getItem('ld_store')   || '';
+const TOKEN    = localStorage.getItem('ld_token')   || '';
+let STORE_CFG  = {};
+let ALL_PRODS  = [];
+let ALL_CLIENTES = [];
+let SELECTED   = new Set();
+let PDF_BLOB   = null;
+
+window.addEventListener('load', function() {
+  if (!TOKEN || !STORE_ID || !BACKEND) {
+    document.getElementById('no-session').classList.add('show');
+    return;
+  }
+  document.getElementById('app').classList.add('visible');
+  cargarDatos();
+});
+
+async function api(action, data) {
+  data = data || {};
+  try {
+    var res = await fetch(BACKEND, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(Object.assign({ action:action, storeId:STORE_ID, token:TOKEN }, data))
+    });
+    var json = await res.json();
+    if (json.error) throw new Error(json.error);
+    return json;
+  } catch(e) { toast(e.message, 'error'); return null; }
+}
+
+function fixImgUrl(url) {
+  if (!url) return '';
+  var m = url.match(/[?&]id=([\w-]+)/);
+  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+  var m2 = url.match(/\/d\/([\w-]+)/);
+  if (m2) return 'https://lh3.googleusercontent.com/d/' + m2[1];
+  return url;
+}
+
+function fmt(n) {
+  return new Intl.NumberFormat('es-MX',{style:'currency',currency:STORE_CFG.currency||'MXN'}).format(Number(n||0));
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function toast(msg, type) {
+  type = type||'success';
+  var el = document.getElementById('toast');
+  el.textContent = msg; el.className = type; el.style.display = 'block';
+  clearTimeout(el._t); el._t = setTimeout(function(){ el.style.display='none'; }, 3500);
+}
+
+async function cargarDatos() {
+  var results = await Promise.all([api('product.list'), api('customer.list'), api('store.info')]);
+  var pRes = results[0], cRes = results[1], iRes = results[2];
+  if (pRes) ALL_PRODS    = (pRes.products||[]).filter(function(p){ return p.active===true||p.active==='TRUE'; });
+  if (cRes) ALL_CLIENTES = cRes.customers || [];
+  if (iRes) {
+    var cfg = iRes.store.config || {};
+    STORE_CFG = typeof cfg==='string' ? JSON.parse(cfg) : cfg;
+    STORE_CFG._name = iRes.store.name || 'Mi Tienda';
+  }
+  renderProds();
+}
+
+function renderProds() {
+  var q = (document.getElementById('search-prods').value||'').toLowerCase();
+  var lista = q ? ALL_PRODS.filter(function(p){ return (p.name||'').toLowerCase().includes(q); }) : ALL_PRODS;
+  var grid = document.getElementById('prods-grid');
+  if (!lista.length) { grid.innerHTML = '<div class="empty">Sin productos</div>'; return; }
+  grid.innerHTML = lista.map(function(p) {
+    var sel = SELECTED.has(p.productId) ? ' selected' : '';
+    var img = fixImgUrl(p.imageUrl||'');
+    return '<div class="prod-item'+sel+'" data-id="'+esc(p.productId)+'">' +
+      '<div class="prod-check">&#10003;</div>' +
+      '<div class="prod-item-img">'+(img?'<img src="'+img+'" onerror="this.style.display=\'none\'">':'&#x1F6CD;')+'</div>' +
+      '<div class="prod-item-body">' +
+        '<div class="prod-item-name">'+esc(p.name||'')+'</div>' +
+        '<div class="prod-item-price">'+fmt(p.price)+'</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  grid.querySelectorAll('.prod-item').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var id = this.getAttribute('data-id');
+      if (SELECTED.has(id)) { SELECTED.delete(id); this.classList.remove('selected'); }
+      else { SELECTED.add(id); this.classList.add('selected'); }
+      document.getElementById('sel-count').textContent = SELECTED.size + ' seleccionados';
+      actualizarPreview();
+      PDF_BLOB = null;
+      document.getElementById('btn-wa').disabled = true;
+      document.getElementById('btn-email').disabled = true;
+    });
+  });
+}
+
+var PLANTILLAS = {
+  promo:  'Hola! Tenemos promociones especiales para ti en {tienda}. No te las pierdas!',
+  nuevo:  'Hola! Llegaron productos nuevos a {tienda}. Entra a ver lo que tenemos para ti.',
+  oferta: 'Oferta por tiempo limitado en {tienda}! Aprovecha antes de que se acaben.',
+  saludo: 'Hola! Gracias por ser cliente de {tienda}. Tenemos novedades que te van a gustar.'
+};
+
+function usarPlantilla(tipo) {
+  var msg = PLANTILLAS[tipo] || '';
+  msg = msg.replace('{tienda}', STORE_CFG._name || 'nuestra tienda');
+  document.getElementById('msg-texto').value = msg;
+  actualizarPreview();
+}
+
+function actualizarPreview() {
+  var msg = document.getElementById('msg-texto').value.trim();
+  var prods = ALL_PRODS.filter(function(p){ return SELECTED.has(p.productId); });
+  var card = document.getElementById('preview-card');
+
+  if (!msg && !prods.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  document.getElementById('preview-msg').textContent = msg || '(sin mensaje)';
+
+  document.getElementById('preview-prods').innerHTML = prods.map(function(p) {
+    var img = fixImgUrl(p.imageUrl||'');
+    return '<div class="preview-prod">' +
+      '<div class="preview-prod-img">'+(img?'<img src="'+img+'" onerror="this.style.display=\'none\'">':'&#x1F6CD;')+'</div>' +
+      '<div><div style="font-weight:700;font-size:13px">'+esc(p.name||'')+'</div><div style="font-size:12px;color:var(--muted)">'+fmt(p.price)+'</div></div>' +
+    '</div>';
+  }).join('');
+}
+
+async function generarPDF() {
+  var prods = ALL_PRODS.filter(function(p){ return SELECTED.has(p.productId); });
+  if (!prods.length) { toast('Selecciona al menos un producto', 'error'); return; }
+
+  var btn = document.getElementById('btn-pdf');
+  btn.disabled = true; btn.textContent = 'Generando PDF...';
+
+  try {
+    var { jsPDF } = window.jspdf;
+    var doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    var pageW = doc.internal.pageSize.getWidth();
+    var y = 20;
+
+    // Titulo
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(20);
+    doc.text(STORE_CFG._name || 'Catalogo', pageW/2, y, {align:'center'});
+    y += 8;
+
+    // Mensaje
+    var msg = document.getElementById('msg-texto').value.trim();
+    if (msg) {
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(11);
+      var lines = doc.splitTextToSize(msg, pageW - 30);
+      doc.text(lines, pageW/2, y, {align:'center'});
+      y += lines.length * 5 + 6;
+    }
+
+    // Linea separadora
+    doc.setDrawColor(200,200,200);
+    doc.line(15, y, pageW-15, y);
+    y += 8;
+
+    // Productos
+    for (var i = 0; i < prods.length; i++) {
+      var p = prods[i];
+      if (y > 250) { doc.addPage(); y = 20; }
+
+      // Intentar cargar imagen
+      var imgData = null;
+      if (p.imageUrl) {
+        try {
+          imgData = await imgToBase64(fixImgUrl(p.imageUrl));
+        } catch(e) { imgData = null; }
+      }
+
+      if (imgData) {
+        doc.addImage(imgData, 'JPEG', 15, y, 35, 35);
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(13);
+        doc.text(p.name||'', 55, y+10);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(11);
+        doc.setTextColor(99,102,241);
+        doc.text(fmt(p.price), 55, y+20);
+        doc.setTextColor(0,0,0);
+        if (p.description) {
+          var desc = doc.splitTextToSize(p.description.slice(0,80), pageW-70);
+          doc.setFontSize(9);
+          doc.setTextColor(100,100,100);
+          doc.text(desc, 55, y+27);
+          doc.setTextColor(0,0,0);
+        }
+        y += 42;
+      } else {
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(13);
+        doc.text(p.name||'', 15, y+8);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(11);
+        doc.setTextColor(99,102,241);
+        doc.text(fmt(p.price), 15, y+16);
+        doc.setTextColor(0,0,0);
+        y += 24;
+      }
+
+      doc.setDrawColor(220,220,220);
+      doc.line(15, y, pageW-15, y);
+      y += 6;
+    }
+
+    // Pie
+    doc.setFontSize(9);
+    doc.setTextColor(150,150,150);
+    doc.text('Generado por LandingKit', pageW/2, 285, {align:'center'});
+
+    PDF_BLOB = doc.output('blob');
+    toast('PDF generado!', 'success');
+    document.getElementById('btn-wa').disabled = false;
+    document.getElementById('btn-email').disabled = false;
+
+    // Descargar automaticamente
+    var url = URL.createObjectURL(PDF_BLOB);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'catalogo-' + (STORE_CFG._name||'tienda').replace(/\s+/g,'-') + '.pdf';
+    a.click();
+
+  } catch(e) {
+    toast('Error generando PDF: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Generar PDF del catalogo';
+  }
+}
+
+function imgToBase64(url) {
+  return new Promise(function(resolve, reject) {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function enviarWA() {
+  var msg = document.getElementById('msg-texto').value.trim();
+  var prods = ALL_PRODS.filter(function(p){ return SELECTED.has(p.productId); });
+  var texto = msg + '\n\n';
+  prods.forEach(function(p){
+    texto += '▪ ' + p.name + ' — ' + fmt(p.price) + '\n';
+  });
+  texto += '\n(Ver catalogo adjunto)';
+  window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
+  toast('Abriendo WhatsApp...', 'success');
+}
+
+function enviarEmail() {
+  var emails = ALL_CLIENTES.map(function(c){ return c.email; }).filter(Boolean);
+  if (!emails.length) { toast('Sin emails de clientes', 'error'); return; }
+  var msg   = document.getElementById('msg-texto').value.trim();
+  var prods = ALL_PRODS.filter(function(p){ return SELECTED.has(p.productId); });
+  var cuerpo = msg + '\n\n';
+  prods.forEach(function(p){ cuerpo += '- ' + p.name + ': ' + fmt(p.price) + '\n'; });
+  cuerpo += '\nAdjuntamos el catalogo en PDF.';
+  var subj  = 'Novedades de ' + (STORE_CFG._name || 'nuestra tienda');
+  window.open('mailto:?bcc=' + emails.join(',') + '&subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(cuerpo), '_blank');
+  toast('Abriendo correo con ' + emails.length + ' destinatarios', 'success');
+}
+</script>
+</body>
+</html>
