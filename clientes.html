@@ -160,10 +160,11 @@ tr.clickable:hover td{background:var(--surface2)}
     <div id="vista-cliente">
       <div class="modal-body">
         <div class="detail-grid" id="detail-datos"></div>
-        <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px">
           <button class="btn wa full" id="btn-wa-cliente">WhatsApp</button>
           <button class="btn full" id="btn-email-cliente">Email</button>
         </div>
+        <button class="btn primary full" id="btn-aprobar-mayorista" style="display:none;background:#f59e0b;border-color:#f59e0b">⭐ Aprobar como mayorista</button>
         <div>
           <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Historial de compras</div>
           <div style="display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:4px;-webkit-overflow-scrolling:touch" id="historial-filtros">
@@ -328,8 +329,8 @@ function renderLista() {
       var pedidos = ALL_ORDERS.filter(function(o){ return o.customerId===c.customerId || o.customerEmail===c.email; }).length;
       return '<tr class="clickable" data-id="' + esc(c.customerId) + '">' +
         '<td><div style="font-weight:600">' + esc(c.name||'—') + '</div><div style="font-size:11px;color:var(--muted)">' + esc(c.email||'') + '</div></td>' +
-        '<td style="font-size:12px">' + esc(c.phone||'—') + '</td>' +
-        '<td style="font-weight:700;color:var(--accent2)">' + pedidos + '</td>' +
+'<td style="font-size:12px">' + esc(c.phone||'—') + '</td>' +
+'<td>' + tipoBadge(c.customerType) + '<div style="font-weight:700;color:var(--accent2);margin-top:3px">' + pedidos + ' pedidos</div></td>' +
       '</tr>';
     }).join('') + '</tbody></table>';
 
@@ -350,7 +351,22 @@ function abrirCliente(customerId) {
     di('Email',     c.email    || '—') +
     di('Telefono',  c.phone    || '—') +
     di('Registro',  c.createdAt ? new Date(c.createdAt).toLocaleDateString('es-MX') : '—') +
-    di('ID',        c.customerId || '—');
+    di('ID',        c.customerId || '—') +
+    di('Tipo',      tipoBadge(c.customerType));
+
+  // Botón aprobar mayorista
+  var btnAprobacion = document.getElementById('btn-aprobar-mayorista');
+  if (c.customerType === 'solicitado') {
+    btnAprobacion.style.display = '';
+    btnAprobacion.onclick = function(){ aprobarMayorista(c.customerId); };
+  } else if (c.customerType === 'mayorista') {
+    btnAprobacion.style.display = '';
+    btnAprobacion.textContent = '✓ Quitar mayorista';
+    btnAprobacion.className = 'btn full';
+    btnAprobacion.onclick = function(){ cambiarTipo(c.customerId, 'regular'); };
+  } else {
+    btnAprobacion.style.display = 'none';
+  }
 
   // WhatsApp y Email
   var btnWA = document.getElementById('btn-wa-cliente');
@@ -397,6 +413,11 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 
 function fmt(n){
   return new Intl.NumberFormat('es-MX',{style:'currency',currency:STORE_CFG.currency||'MXN'}).format(Number(n||0));
+}
+  function tipoBadge(tipo) {
+  if (tipo==='mayorista')  return '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">★ Mayorista</span>';
+  if (tipo==='solicitado') return '<span style="background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">⏳ Solicitado</span>';
+  return '<span style="background:#f3f4f6;color:#888;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">Regular</span>';
 }
 
 function labelStatus(s){
@@ -604,6 +625,35 @@ async function cambiarEstadoPedido(orderId, status) {
   });
   toast('Estado actualizado','success');
   renderHistorial();
+}
+  async function aprobarMayorista(customerId) {
+  var res = await api('customer.update.type', { customerId:customerId, customerType:'mayorista' });
+  if (!res) return;
+  var c = ALL_CLIENTES.find(function(x){ return x.customerId===customerId; });
+  if (c) c.customerType = 'mayorista';
+  toast('Cliente aprobado como mayorista ★', 'success');
+  var btn = document.getElementById('btn-aprobar-mayorista');
+  btn.textContent = '✓ Quitar mayorista';
+  btn.className = 'btn full';
+  btn.style.background = '';
+  btn.style.borderColor = '';
+  btn.onclick = function(){ cambiarTipo(customerId, 'regular'); };
+  document.getElementById('detail-datos').querySelectorAll('.detail-item').forEach(function(el){
+    if (el.querySelector('.lbl') && el.querySelector('.lbl').textContent === 'Tipo') {
+      el.querySelector('.val').innerHTML = tipoBadge('mayorista');
+    }
+  });
+  renderLista();
+}
+
+async function cambiarTipo(customerId, tipo) {
+  var res = await api('customer.update.type', { customerId:customerId, customerType:tipo });
+  if (!res) return;
+  var c = ALL_CLIENTES.find(function(x){ return x.customerId===customerId; });
+  if (c) c.customerType = tipo;
+  toast('Tipo actualizado: ' + tipo, 'success');
+  document.getElementById('btn-aprobar-mayorista').style.display = 'none';
+  renderLista();
 }
 </script>
 </body>
