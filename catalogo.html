@@ -220,6 +220,12 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
           </select>
         </div>
       </div>
+      <div class="field-row">
+        <div class="field"><label>Precio mayorista</label><input type="number" id="p-wholesale" placeholder="0.00 (opcional)" min="0" step="0.01"/></div>
+        <div class="field" style="display:flex;align-items:flex-end;padding-bottom:1px">
+          <div style="font-size:11px;color:var(--muted);line-height:1.5">Precio especial para clientes mayoristas. Dejar vacío si no aplica.</div>
+        </div>
+      </div>
       <div class="field">
         <label>Imagen</label>
         <div class="img-tabs">
@@ -237,6 +243,28 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
             <div class="img-upload-info">
               <div class="img-upload-label">Toca para elegir imagen</div>
               <div class="img-upload-hint">JPG, PNG, WEBP — máx 5MB</div>
+            </div>
+          </div>
+        </div>
+    </div>
+      <!-- Imagen secundaria -->
+      <div class="field">
+        <label>Imagen secundaria <span style="color:var(--muted);font-weight:400;text-transform:none">(opcional)</span></label>
+        <div class="img-tabs">
+          <div class="img-tab active" id="itab2-url" onclick="switchImgTab2('url')">🔗 URL</div>
+          <div class="img-tab" id="itab2-file" onclick="switchImgTab2('file')">📷 Cámara / Galería</div>
+        </div>
+        <div id="img2-url-view"><input id="p-img2" placeholder="https://..."/></div>
+        <div id="img2-file-view" style="display:none">
+          <div class="img-upload-row">
+            <input type="file" id="p-img2-file" accept="image/*" capture="environment" onchange="handleImgFile2(this)">
+            <div class="img-thumb">
+              <span id="prod-img2-emoji">📷</span>
+              <img id="img2-preview" src="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:6px">
+            </div>
+            <div class="img-upload-info">
+              <div class="img-upload-label">Segunda imagen del producto</div>
+              <div class="img-upload-hint">Se muestra al deslizar en la tienda</div>
             </div>
           </div>
         </div>
@@ -281,7 +309,8 @@ let STORE_ID  = localStorage.getItem('ld_store')  || '';
 let USER_ROLE = localStorage.getItem('ld_role')   || '';
 let STORE_CFG = {};
 let ALL_PRODS = [];
-let PENDING_IMG_B64='', PENDING_IMG_MIME='image/jpeg', PENDING_IMG_NAME='';
+  let PENDING_IMG_B64='', PENDING_IMG_MIME='image/jpeg', PENDING_IMG_NAME='';
+let PENDING_IMG2_B64='', PENDING_IMG2_MIME='image/jpeg', PENDING_IMG2_NAME='';
 
 /* ─────────────────────────────────────────
    INIT
@@ -439,7 +468,10 @@ function renderProducts(prods) {
       '<div class="prod-body">' +
         '<div class="prod-name">'+esc(p.name)+'</div>' +
         '<div class="prod-cat">'+esc(p.category||'Sin categoría')+'</div>' +
-        '<div class="prod-price">'+fmt(p.price)+'</div>' +
+      '<div class="prod-price">'+fmt(p.price)+'</div>' +
+        (p.wholesalePrice!==undefined && p.wholesalePrice!=='' && p.wholesalePrice!==false
+          ? '<div style="font-size:10px;color:#92400e;background:#fffbeb;padding:1px 6px;border-radius:99px;display:inline-block;margin-top:2px">★ May: '+fmt(p.wholesalePrice)+'</div>'
+          : '') + 
       '</div>' +
       '<div class="prod-actions">' +
         '<button class="btn sm" style="flex:1" onclick="editProduct(\''+p.productId+'\')">Editar</button>' +
@@ -481,6 +513,27 @@ function handleImgFile(input) {
   };
   reader.readAsDataURL(file);
 }
+  function switchImgTab2(tab) {
+  document.getElementById('itab2-url').classList.toggle('active', tab==='url');
+  document.getElementById('itab2-file').classList.toggle('active', tab==='file');
+  document.getElementById('img2-url-view').style.display  = tab==='url'  ? '' : 'none';
+  document.getElementById('img2-file-view').style.display = tab==='file' ? '' : 'none';
+  if (tab==='url') PENDING_IMG2_B64='';
+}
+
+function handleImgFile2(input) {
+  var file = input.files[0]; if (!file) return;
+  if (file.size > 5*1024*1024) { toast('Imagen muy grande — máx 5MB','error'); return; }
+  PENDING_IMG2_MIME=file.type||'image/jpeg'; PENDING_IMG2_NAME=file.name;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    PENDING_IMG2_B64 = e.target.result.split(',')[1];
+    var img = document.getElementById('img2-preview');
+    img.src=e.target.result; img.style.display='block';
+    document.getElementById('prod-img2-emoji').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
 
 function editProduct(id) {
   var p = ALL_PRODS.find(function(x){ return x.productId===id; }); if (!p) return;
@@ -492,20 +545,27 @@ function editProduct(id) {
   document.getElementById('p-stock').value  = p.stock||0;
   document.getElementById('p-cat').value    = p.category||'';
   document.getElementById('p-img').value    = p.imageUrl||'';
-  document.getElementById('p-active').value = String(p.active===true || p.active==='TRUE');
-  switchImgTab('url'); PENDING_IMG_B64='';
+  document.getElementById('p-active').value    = String(p.active===true || p.active==='TRUE');
+  document.getElementById('p-wholesale').value = p.wholesalePrice||'';
+  document.getElementById('p-img2').value      = p.imageUrl2||'';
+  switchImgTab('url');  PENDING_IMG_B64='';
+  switchImgTab2('url'); PENDING_IMG2_B64='';
   openModal('add-product');
 }
 
 function clearProdForm() {
   document.getElementById('prod-modal-title').textContent = 'Nuevo producto';
   document.getElementById('edit-prod-id').value = '';
-  ['p-name','p-desc','p-price','p-stock','p-cat','p-img'].forEach(function(id){ document.getElementById(id).value=''; });
+ ['p-name','p-desc','p-price','p-stock','p-cat','p-img','p-wholesale','p-img2'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('p-active').value = 'true';
-  switchImgTab('url'); PENDING_IMG_B64='';
+  switchImgTab('url');  PENDING_IMG_B64='';
+  switchImgTab2('url'); PENDING_IMG2_B64='';
   var img = document.getElementById('img-preview'); img.style.display='none'; img.src='';
   document.getElementById('prod-img-emoji').style.display='';
   document.getElementById('p-img-file').value='';
+  var img2 = document.getElementById('img2-preview'); img2.style.display='none'; img2.src='';
+  document.getElementById('prod-img2-emoji').style.display='';
+  document.getElementById('p-img2-file').value='';
 }
 
 async function saveProduct() {
@@ -520,13 +580,24 @@ async function saveProduct() {
     category:    document.getElementById('p-cat').value,
     active:      document.getElementById('p-active').value === 'true'
   };
-  if (PENDING_IMG_B64) {
+if (PENDING_IMG_B64) {
     data.imageBase64 = PENDING_IMG_B64;
     data.mimeType    = PENDING_IMG_MIME;
     data.fileName    = PENDING_IMG_NAME;
   } else {
     data.imageUrl = document.getElementById('p-img').value;
   }
+  // Imagen secundaria
+  if (PENDING_IMG2_B64) {
+    data.imageBase64_2 = PENDING_IMG2_B64;
+    data.mimeType2     = PENDING_IMG2_MIME;
+    data.fileName2     = PENDING_IMG2_NAME;
+  } else {
+    data.imageUrl2 = document.getElementById('p-img2').value;
+  }
+  // Precio mayorista
+  var wp = document.getElementById('p-wholesale').value;
+  data.wholesalePrice = wp !== '' ? wp : '';
   var res = editId
     ? await api('product.update', Object.assign({productId:editId}, data))
     : await api('product.create', data);
