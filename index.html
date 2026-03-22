@@ -313,7 +313,8 @@ async function doOwnerLogin() {
   try {
     var data = await postAPI({ action:'owner.login', accessCode: code });
     if (!data.ok || !data.token) { showLErr('owner', data.error||'Código inválido'); return; }
-    saveSession(data.token, data.storeId, 'owner', data.name, data.ownerEmail);
+saveSession(data.token, data.storeId, 'owner', data.name, data.ownerEmail);
+if (data.planInfo) localStorage.setItem('ld_plan_info', JSON.stringify(data.planInfo));
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     applyRoleUI('owner');
@@ -354,6 +355,19 @@ function saveSession(token, storeId, role, name, email) {
 
 function applyRoleUI(role) {
   document.querySelectorAll('.owner-only').forEach(function(el){ el.style.display = role==='owner'?'':'none'; });
+  var planInfo = JSON.parse(localStorage.getItem('ld_plan_info')||'{}');
+  var isLight  = planInfo.catalogOnly === true;
+  // Ocultar Pedidos y Clientes en plan Light
+  var btnPedidos  = document.querySelector('.menu-btn[onclick*="pedidos"]');
+  var btnClientes = document.querySelector('.menu-btn[onclick*="clientes"]');
+  if (btnPedidos)  btnPedidos.style.display  = isLight ? 'none' : '';
+  if (btnClientes) btnClientes.style.display = isLight ? 'none' : '';
+  // Ocultar stats de pedidos/clientes/ingresos en Light
+  if (isLight) {
+    document.getElementById('d-orders').closest('.stat-card').style.display   = 'none';
+    document.getElementById('d-revenue').closest('.stat-card').style.display  = 'none';
+    document.getElementById('d-customers').closest('.stat-card').style.display= 'none';
+  }
 }
 
 function showLErr(type, msg) {
@@ -521,7 +535,7 @@ function extendSession() { resetInactTimer(); toast('Sesión extendida ✅','suc
 resetInactTimer();
 
 function logout() {
-  ['ld_token','ld_store','ld_role','ld_backend'].forEach(function(k){ localStorage.removeItem(k); });
+['ld_token','ld_store','ld_role','ld_backend','ld_plan_info'].forEach(function(k){ localStorage.removeItem(k); });
   location.reload();
 }
 </script>
