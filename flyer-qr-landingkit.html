@@ -275,15 +275,59 @@ var PAL          = { c1:'#00d98b', c1d:'#009960', c1l:'#d0fdf0', ink:'#0f1117', 
 
 // ════════════ CARGA ════════════
 function cargar() {
-  setS('spin', 'Cargando…');
+  // Leer params pasados directamente desde el panel dueño
+  var nombre    = params.get('nombre')    || '';
+  var logo      = params.get('logo')      || '';
+  var ubicacion = params.get('ubicacion') || '';
+  var telefono  = params.get('telefono')  || '';
+  var banner    = params.get('banner')    || '';
 
-  // Sin parámetros → demo
+  if (nombre) {
+    // Datos completos recibidos desde panel dueño
+    if (banner) BANNER_TEXT = banner;
+    URL_QR = BACKEND && STORE_ID ? buildStoreUrl() : window.location.href;
+    setS('ok', nombre);
+    renderCards({
+      name:          nombre,
+      logo:          logo,
+      storeLocation: ubicacion,
+      ownerPhone:    telefono,
+      bannerMessage: banner
+    });
+    return;
+  }
+
+  // Fallback: intentar cargar desde backend
+  setS('spin', 'Cargando…');
   if (!BACKEND || !STORE_ID) {
-    if (LIC_LEGACY) {
-      // compatibilidad con flujo anterior (lic=)
-      cargarLegacy();
-      return;
-    }
+    setS('err', '⚠ Falta ?backend= y ?store=');
+    renderCards(demo());
+    return;
+  }
+  fetch(BACKEND, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'store.info', storeId: STORE_ID })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (!d || d.error) { setS('err', 'Sin respuesta'); renderCards(demo()); return; }
+    var store  = d.store || d;
+    var config = store.config || {};
+    if (typeof config === 'string') config = JSON.parse(config);
+    if (config.bannerMessage) BANNER_TEXT = config.bannerMessage;
+    URL_QR = buildStoreUrl();
+    setS('ok', store.name || STORE_ID);
+    renderCards({
+      name:          store.name || '',
+      logo:          config.logo || config.logoUrl || '',
+      storeLocation: config.storeLocation || '',
+      ownerPhone:    config.whatsapp || config.ownerPhone || '',
+      bannerMessage: config.bannerMessage || ''
+    });
+  })
+  .catch(function() { setS('err', 'Sin conexión'); renderCards(demo()); });
+}
     setS('err', '⚠ Falta ?backend= y ?store=');
     renderCards(demo());
     return;
