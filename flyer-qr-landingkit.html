@@ -297,6 +297,7 @@ function cargar() {
   })
   .then(function(r) { return r.json(); })
   .then(function(d) {
+    console.log('RESPUESTA BACKEND:', JSON.stringify(d));
     if (!d || d.error) {
       setS('err', d ? d.error : 'Sin respuesta');
       renderCards(demo());
