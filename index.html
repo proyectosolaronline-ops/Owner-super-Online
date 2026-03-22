@@ -467,11 +467,17 @@ function renderRecentOrders() {
 // ── SETTINGS ──
 async function saveSettings() {
   var config = {
-    description: STORE_CFG.description||'', primaryColor: STORE_CFG.primaryColor||'#6366f1',
-    textColor: STORE_CFG.textColor||'#ffffff', logo: STORE_CFG.logo||'', bannerUrl: STORE_CFG.bannerUrl||'',
-    whatsapp: document.getElementById('cfg-wa').value,
-    currency: document.getElementById('cfg-currency').value,
-    emailNotifications: document.getElementById('cfg-notif').value==='true'
+    description:    STORE_CFG.description    || '',
+    primaryColor:   STORE_CFG.primaryColor   || '#6366f1',
+    textColor:      STORE_CFG.textColor      || '#ffffff',
+    logo:           STORE_CFG.logo           || '',
+    bannerUrl:      STORE_CFG.bannerUrl      || '',
+    bannerMessage:  STORE_CFG.bannerMessage  || '',
+    businessType:   STORE_CFG.businessType   || 'regular',
+    storeLocation:  STORE_CFG.storeLocation  || '',
+    whatsapp:       document.getElementById('cfg-wa').value,
+    currency:       document.getElementById('cfg-currency').value,
+    emailNotifications: document.getElementById('cfg-notif').value === 'true'
   };
   var res = await api('store.settings.save', { config:config });
   if (!res) return;
