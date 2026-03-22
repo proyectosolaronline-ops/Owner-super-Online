@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Aviso de Privacidad — LandingKit</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap');
+:root{
+  --bg:#f4f4f0;--surface:#fff;--border:#e8e8e2;
+  --accent:#6366f1;--text:#1a1a1a;--muted:#888;
+  --danger:#ef4444;--success:#16a34a;
+  --font-d:'DM Serif Display',serif;--font-b:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+
+/* ── MODAL OVERLAY ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+  z-index:500;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);}
+.overlay.open{display:flex;}
+
+/* ── MODAL ── */
+.modal{
+  background:#fff;border-radius:20px 20px 0 0;
+  width:100%;max-width:520px;
+  max-height:88vh;overflow-y:auto;
+  padding:28px 24px 32px;
+  animation:slideUp .28s cubic-bezier(.34,1.2,.64,1) both;
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+.modal-icon{font-size:32px;margin-bottom:10px;}
+.modal-title{
+  font-family:var(--font-d);font-size:22px;font-weight:400;
+  margin-bottom:6px;line-height:1.2;
+}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;}
+
+/* ── CONTENIDO PRIVACIDAD ── */
+.priv-body{
+  background:#f9f9f6;border:1.5px solid var(--border);
+  border-radius:12px;padding:16px;
+  font-size:13px;line-height:1.7;color:#333;
+  margin-bottom:20px;
+  max-height:220px;overflow-y:auto;
+}
+.priv-body h4{
+  font-family:var(--font-d);font-size:15px;font-weight:400;
+  color:var(--text);margin-bottom:8px;
+}
+.priv-body p{margin-bottom:8px;}
+.priv-body p:last-child{margin-bottom:0;}
+.priv-body strong{color:var(--text);}
+
+/* ── BOTONES ── */
+.modal-btns{display:flex;flex-direction:column;gap:10px;}
+.btn{
+  width:100%;padding:14px;border-radius:10px;
+  font-family:var(--font-b);font-size:14px;font-weight:600;
+  cursor:pointer;border:none;transition:.15s;
+}
+.btn.primary{background:var(--accent);color:#fff;}
+.btn.primary:hover{filter:brightness(1.08);}
+.btn.ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
+.btn.ghost:hover{border-color:var(--muted);}
+
+/* ── LEYENDA EN FORMULARIO ── */
+.priv-legend{
+  display:flex;align-items:flex-start;gap:8px;
+  background:#fffbeb;border:1.5px solid #fde68a;
+  border-radius:10px;padding:10px 12px;
+  font-size:12px;color:#92400e;line-height:1.5;
+  margin-top:12px;
+}
+.priv-legend.accepted{
+  background:#f0fdf4;border-color:#86efac;color:#166534;
+}
+.priv-legend-ico{flex-shrink:0;font-size:15px;}
+.priv-legend a{color:inherit;font-weight:600;text-decoration:underline;cursor:pointer;}
+
+/* ── DEMO FORM ── */
+.demo-card{
+  background:#fff;border:1.5px solid var(--border);
+  border-radius:16px;padding:24px;width:100%;max-width:400px;
+}
+.demo-title{font-family:var(--font-d);font-size:20px;margin-bottom:16px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.field input{width:100%;padding:11px 12px;border:1.5px solid var(--border);
+  border-radius:10px;font-size:14px;font-family:var(--font-b);color:var(--text);}
+.field input:focus{outline:none;border-color:var(--accent);}
+.btn-send{
+  width:100%;padding:14px;border-radius:10px;
+  background:var(--accent);color:#fff;
+  font-family:var(--font-b);font-size:14px;font-weight:600;
+  cursor:pointer;border:none;margin-top:4px;
+}
+.status-bar{
+  margin-top:16px;padding:10px 12px;border-radius:10px;
+  font-size:12px;font-weight:600;display:none;
+}
+.status-bar.show{display:block;}
+.status-bar.ok{background:#f0fdf4;color:var(--success);border:1.5px solid #86efac;}
+</style>
+</head>
+<body>
+
+<!-- ── DEMO: simula un formulario de pedido ── -->
+<div class="demo-card">
+  <div class="demo-title">📦 Hacer pedido</div>
+
+  <div class="field">
+    <label>Nombre</label>
+    <input id="f-nombre" placeholder="Tu nombre completo"/>
+  </div>
+  <div class="field">
+    <label>Teléfono / WhatsApp</label>
+    <input id="f-tel" placeholder="+52 555 000 0000"/>
+  </div>
+
+  <!-- ── LEYENDA PRIVACIDAD (cambia según estado) ── -->
+  <div class="priv-legend" id="priv-legend">
+    <span class="priv-legend-ico">🔒</span>
+    <span>
+      Al enviar, aceptas nuestro
+      <a onclick="abrirPrivacidad()">Aviso de Privacidad</a>.
+      Tus datos se usan <strong>únicamente</strong> para responder tus solicitudes.
+    </span>
+  </div>
+
+  <button class="btn-send" onclick="enviarPedido()">Enviar pedido</button>
+
+  <div class="status-bar" id="status-bar"></div>
+</div>
+
+<!-- ── MODAL AVISO DE PRIVACIDAD ── -->
+<div class="overlay" id="overlay-priv">
+  <div class="modal">
+    <div class="modal-icon">🔒</div>
+    <div class="modal-title">Aviso de Privacidad</div>
+    <div class="modal-sub">Breve y claro — tus datos están protegidos.</div>
+
+    <div class="priv-body">
+      <h4>¿Qué datos recopilamos?</h4>
+      <p>Nombre, teléfono y dirección de entrega que proporcionas al realizar un pedido.</p>
+
+      <h4>¿Para qué los usamos?</h4>
+      <p><strong>Exclusivamente</strong> para procesar y responder tus solicitudes: confirmación de pedido, seguimiento y entrega. No los usamos para publicidad ni los compartimos con terceros.</p>
+
+      <h4>¿Quién los resguarda?</h4>
+      <p>El responsable es el comercio que opera esta tienda. Los datos se almacenan en servidores seguros de Google (Google Sheets / Drive) y no se transfieren fuera de México sin tu consentimiento.</p>
+
+      <h4>¿Puedes ejercer tus derechos?</h4>
+      <p>Sí. Tienes derecho de Acceso, Rectificación, Cancelación y Oposición (ARCO). Escríbenos por WhatsApp o al correo del comercio para ejercerlos.</p>
+
+      <p style="color:var(--muted);font-size:12px">Ley Federal de Protección de Datos Personales en Posesión de los Particulares · México.</p>
+    </div>
+
+    <div class="modal-btns">
+      <button class="btn primary" onclick="aceptarPrivacidad()">✅ Leído y aceptado</button>
+      <button class="btn ghost"   onclick="ignorarPrivacidad()">Ahora no</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  VARIABLE DE ESTADO — importar/exportar según
+//  el sistema que lo integre
+//  Valores: 'pending' | 'accepted' | 'dismissed'
+// ══════════════════════════════════════════════
+var PRIVACY_STATUS = localStorage.getItem('lk_privacy') || 'pending';
+
+// ── INIT: al cargar, si no fue leído, mostrar modal ──
+window.addEventListener('load', function() {
+  actualizarLeyenda();
+  if (PRIVACY_STATUS === 'pending') {
+    abrirPrivacidad();
+  }
+});
+
+// ── ABRIR MODAL ──
+function abrirPrivacidad() {
+  document.getElementById('overlay-priv').classList.add('open');
+}
+
+// ── CERRAR MODAL ──
+function cerrarPrivacidad() {
+  document.getElementById('overlay-priv').classList.remove('open');
+}
+
+// ── ACEPTAR ──
+function aceptarPrivacidad() {
+  PRIVACY_STATUS = 'accepted';
+  localStorage.setItem('lk_privacy', 'accepted');
+  actualizarLeyenda();
+  cerrarPrivacidad();
+}
+
+// ── IGNORAR / "Ahora no" ──
+function ignorarPrivacidad() {
+  PRIVACY_STATUS = 'dismissed';
+  localStorage.setItem('lk_privacy', 'dismissed');
+  actualizarLeyenda();
+  cerrarPrivacidad();
+}
+
+// ── LEYENDA dinámica según estado ──
+function actualizarLeyenda() {
+  var el = document.getElementById('priv-legend');
+  if (PRIVACY_STATUS === 'accepted') {
+    el.className = 'priv-legend accepted';
+    el.innerHTML =
+      '<span class="priv-legend-ico">✅</span>' +
+      '<span>Has leído y aceptado nuestro ' +
+      '<a onclick="abrirPrivacidad()">Aviso de Privacidad</a>. ' +
+      'Tus datos se usan únicamente para responder tus solicitudes.</span>';
+  } else {
+    el.className = 'priv-legend';
+    el.innerHTML =
+      '<span class="priv-legend-ico">🔒</span>' +
+      '<span>Al enviar, aceptas nuestro ' +
+      '<a onclick="abrirPrivacidad()">Aviso de Privacidad</a>. ' +
+      'Tus datos se usan <strong>únicamente</strong> para responder tus solicitudes.</span>';
+  }
+}
+
+// ── ENVIAR PEDIDO ──
+function enviarPedido() {
+  // Si no ha aceptado explícitamente, mostrar modal primero
+  if (PRIVACY_STATUS !== 'accepted') {
+    abrirPrivacidad();
+    return;
+  }
+  // Validación básica demo
+  var nombre = document.getElementById('f-nombre').value.trim();
+  var tel    = document.getElementById('f-tel').value.trim();
+  if (!nombre || !tel) {
+    mostrarStatus('Completa nombre y teléfono.', false);
+    return;
+  }
+  // ── Aquí va tu lógica real de envío ──
+  // El pedido lleva implícito: PRIVACY_STATUS === 'accepted'
+  // Puedes adjuntarlo al payload: { ...pedido, privacyAccepted: true }
+  mostrarStatus('✅ Pedido enviado. Has leído y aceptado el Aviso de Privacidad — recibirás respuesta a tus solicitudes.', true);
+}
+
+function mostrarStatus(msg, ok) {
+  var el = document.getElementById('status-bar');
+  el.textContent = msg;
+  el.className = 'status-bar show ' + (ok ? 'ok' : '');
+  el.style.background = ok ? '' : '#fef2f2';
+  el.style.color      = ok ? '' : '#991b1b';
+  el.style.border     = ok ? '' : '1.5px solid #fecaca';
+}
+
+// Cerrar overlay al clic fuera
+document.getElementById('overlay-priv').addEventListener('click', function(e) {
+  if (e.target === this) ignorarPrivacidad();
+});
+</script>
+</body>
+</html>
