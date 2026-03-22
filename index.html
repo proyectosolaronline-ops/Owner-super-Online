@@ -489,27 +489,26 @@ async function saveSettings() {
   STORE_CFG = Object.assign({}, STORE_CFG, config);
   closeModal('config');
 }
-
 function abrirEditor() {
   window.open('editor-apariencia.html?backend='+encodeURIComponent(BACKEND)+'&store='+encodeURIComponent(STORE_ID), '_blank');
 }
 function abrirFlyerQR() {
   var storeBase = 'https://proyectosolaronline-ops.github.io/superOnline-Tienda/index.html';
-  var nombre    = document.getElementById('topbar-name').textContent || '';
-  var logo      = STORE_CFG.logo        || '';
-  var ubicacion = STORE_CFG.storeLocation || '';
-  var telefono  = STORE_CFG.whatsapp    || '';
-  var banner    = STORE_CFG.bannerMessage || '';
+  var nombre    = document.getElementById('topbar-name').textContent.trim();
+  var logo      = STORE_CFG.logo             || '';
+  var ubicacion = STORE_CFG.storeLocation    || '';
+  var telefono  = STORE_CFG.whatsapp         || '';
+  var banner    = STORE_CFG.bannerMessage    || '';
   window.open(
-    'flyer-qr-landingkit.html' +
-    '?backend='   + encodeURIComponent(BACKEND) +
-    '&store='     + encodeURIComponent(STORE_ID) +
-    '&storeBase=' + encodeURIComponent(storeBase) +
-    '&nombre='    + encodeURIComponent(nombre) +
-    '&logo='      + encodeURIComponent(logo) +
-    '&ubicacion=' + encodeURIComponent(ubicacion) +
-    '&telefono='  + encodeURIComponent(telefono) +
-    '&banner='    + encodeURIComponent(banner),
+    'flyer-qr-landingkit.html'
+    + '?backend='   + encodeURIComponent(BACKEND)
+    + '&store='     + encodeURIComponent(STORE_ID)
+    + '&storeBase=' + encodeURIComponent(storeBase)
+    + '&nombre='    + encodeURIComponent(nombre)
+    + '&logo='      + encodeURIComponent(logo)
+    + '&ubicacion=' + encodeURIComponent(ubicacion)
+    + '&telefono='  + encodeURIComponent(telefono)
+    + '&banner='    + encodeURIComponent(banner),
     '_blank'
   );
 }
