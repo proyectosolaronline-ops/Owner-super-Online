@@ -1,0 +1,366 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu Tienda Online — Lo que necesitas saber</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1c1c26;
+  --border: rgba(255,255,255,.08);
+  --text: #f0f0f5;
+  --muted: #8888a0;
+  --accent: #7c6af7;
+  --accent2: #f7c26a;
+  --green: #4ade80;
+  --red: #f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,106,247,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(247,194,106,.08) 0%, transparent 60%);
+}
+.hero-grid {
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.hero-inner { position:relative;z-index:1;max-width:680px }
+.badge {
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent2);
+  background:rgba(247,194,106,.1);border:1px solid rgba(247,194,106,.2);
+  padding:6px 16px;border-radius:99px;margin-bottom:28px;
+}
+.badge span { width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:pulse 2s infinite }
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.hero h1 {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(36px,7vw,72px);
+  font-weight:900;
+  line-height:1.05;
+  letter-spacing:-.02em;
+  margin-bottom:20px;
+}
+.hero h1 em { font-style:normal;color:var(--accent) }
+.hero p {
+  font-size:17px;color:var(--muted);
+  max-width:500px;margin:0 auto 36px;
+  font-weight:300;line-height:1.8;
+}
+.scroll-hint {
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:var(--muted);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  animation:bob 2s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+.scroll-hint svg{opacity:.4}
+
+/* ── SECCIÓN ── */
+.section { padding:80px 24px;max-width:800px;margin:0 auto }
+.section-label {
+  font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:12px;
+}
+.section h2 {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(26px,4vw,40px);font-weight:700;
+  margin-bottom:16px;line-height:1.2;
+}
+.section p { color:var(--muted);font-size:15px;line-height:1.8;margin-bottom:16px }
+
+/* ── CARDS ── */
+.cards { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:36px }
+.card {
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:24px;
+  transition:border-color .2s,transform .2s;
+  position:relative;overflow:hidden;
+}
+.card::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  opacity:0;transition:opacity .2s;
+}
+.card:hover{border-color:rgba(124,106,247,.3);transform:translateY(-3px)}
+.card:hover::before{opacity:1}
+.card-icon{font-size:28px;margin-bottom:14px}
+.card h3{font-size:15px;font-weight:600;margin-bottom:8px}
+.card p{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* ── LISTA SI/NO ── */
+.divider{height:1px;background:var(--border);margin:0 24px}
+.check-section{padding:80px 24px;max-width:800px;margin:0 auto}
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:36px}
+.check-col h3{
+  font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:16px;display:flex;align-items:center;gap:8px;
+}
+.check-col.yes h3{color:var(--green)}
+.check-col.no h3{color:var(--red)}
+.check-list{display:flex;flex-direction:column;gap:10px}
+.check-item{
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:13px;color:var(--muted);line-height:1.5;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;
+}
+.check-item .dot{
+  width:18px;height:18px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;margin-top:1px;
+}
+.yes .dot{background:rgba(74,222,128,.15);color:var(--green)}
+.no .dot{background:rgba(248,113,113,.15);color:var(--red)}
+
+/* ── PLATAFORMAS ── */
+.platforms{padding:80px 24px;max-width:800px;margin:0 auto}
+.platform-row{
+  display:flex;align-items:flex-start;gap:20px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:22px;margin-bottom:14px;
+  transition:border-color .2s;
+}
+.platform-row:hover{border-color:rgba(124,106,247,.3)}
+.platform-logo{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;background:var(--surface2);
+}
+.platform-info h3{font-size:15px;font-weight:600;margin-bottom:4px}
+.platform-info p{font-size:13px;color:var(--muted);line-height:1.6}
+.platform-tag{
+  display:inline-block;margin-top:8px;
+  font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 10px;border-radius:99px;
+}
+.tag-free{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.tag-google{background:rgba(66,133,244,.12);color:#4285f4;border:1px solid rgba(66,133,244,.2)}
+
+/* ── ALERTA ── */
+.alert-box{
+  background:rgba(247,194,106,.06);
+  border:1px solid rgba(247,194,106,.2);
+  border-radius:14px;padding:22px 24px;
+  margin-top:32px;display:flex;gap:16px;align-items:flex-start;
+}
+.alert-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.alert-box h4{font-size:14px;font-weight:600;color:var(--accent2);margin-bottom:6px}
+.alert-box p{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* ── PRECIOS ── */
+.pricing{padding:80px 24px;max-width:800px;margin:0 auto;text-align:center}
+.price-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:36px;text-align:left}
+.price-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:24px;
+}
+.price-card.featured{
+  border-color:var(--accent);
+  background:linear-gradient(135deg,rgba(124,106,247,.08),var(--surface));
+}
+.price-card .plan-name{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.price-card .plan-price{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;margin-bottom:4px}
+.price-card .plan-period{font-size:12px;color:var(--muted);margin-bottom:18px}
+.price-card ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.price-card li{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start}
+.price-card li::before{content:'→';color:var(--accent);flex-shrink:0;font-weight:700}
+
+/* ── FOOTER ── */
+footer{
+  text-align:center;padding:48px 24px;
+  border-top:1px solid var(--border);
+  color:var(--muted);font-size:12px;
+}
+footer strong{color:var(--text)}
+
+@media(max-width:600px){
+  .check-grid{grid-template-columns:1fr}
+  .cards{grid-template-columns:1fr 1fr}
+  .platform-row{flex-direction:column;gap:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="badge"><span></span> Información importante para ti</div>
+    <h1>Tu tienda online,<br><em>sin complicaciones</em></h1>
+    <p>Todo lo que necesitas saber sobre cómo funciona tu tienda, qué incluye y qué esperar del servicio.</p>
+    <div class="scroll-hint">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      Desliza para leer
+    </div>
+  </div>
+</div>
+
+<!-- ¿QUÉ ES? -->
+<section class="section">
+  <div class="section-label">¿Cómo funciona?</div>
+  <h2>Tu tienda usa la infraestructura de Google y GitHub</h2>
+  <p>No inventamos la rueda. Tu tienda está construida sobre las plataformas más confiables del mundo — las mismas que usan millones de empresas globalmente. Esto significa cero costos de servidor y máxima estabilidad.</p>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🗂️</div>
+      <h3>Tus productos en Google Sheets</h3>
+      <p>Todos tus productos, precios y pedidos se guardan en una hoja de cálculo de Google que puedes ver y editar desde tu celular en cualquier momento.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h3>Motor en Google Apps Script</h3>
+      <p>El sistema que conecta tu tienda con tus datos corre en los servidores de Google automáticamente, sin que tengas que hacer nada.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <h3>Tu tienda en GitHub Pages</h3>
+      <p>La página que ven tus clientes está publicada en GitHub, una plataforma propiedad de Microsoft usada por más de 100 millones de desarrolladores.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📱</div>
+      <h3>Acceso desde cualquier lugar</h3>
+      <p>Tú y tus clientes pueden usar la tienda desde cualquier celular o computadora, sin instalar ninguna app.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- LO QUE INCLUYE / NO INCLUYE -->
+<section class="check-section">
+  <div class="section-label">Qué incluye el servicio</div>
+  <h2 style="font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,40px);font-weight:700;margin-bottom:16px">Lo que sí y lo que no</h2>
+  <div class="check-grid">
+    <div class="check-col yes">
+      <h3>✓ Incluido</h3>
+      <div class="check-list">
+        <div class="check-item"><div class="dot">✓</div>Catálogo de productos con fotos</div>
+        <div class="check-item"><div class="dot">✓</div>Sistema de pedidos en línea</div>
+        <div class="check-item"><div class="dot">✓</div>Registro y login de clientes</div>
+        <div class="check-item"><div class="dot">✓</div>Precios públicos y mayoristas</div>
+        <div class="check-item"><div class="dot">✓</div>Panel de gestión del dueño</div>
+        <div class="check-item"><div class="dot">✓</div>Editor de apariencia (logo, color, banner)</div>
+        <div class="check-item"><div class="dot">✓</div>Botón de WhatsApp integrado</div>
+        <div class="check-item"><div class="dot">✓</div>Código QR para compartir la tienda</div>
+        <div class="check-item"><div class="dot">✓</div>Hosting gratuito sin mensualidad</div>
+      </div>
+    </div>
+    <div class="check-col no">
+      <h3>✗ No incluido</h3>
+      <div class="check-list">
+        <div class="check-item"><div class="dot">✗</div>Cobro en línea automático (tarjeta/transferencia)</div>
+        <div class="check-item"><div class="dot">✗</div>Dominio propio (.com, .mx) — es opcional y tiene costo aparte</div>
+        <div class="check-item"><div class="dot">✗</div>App móvil instalable</div>
+        <div class="check-item"><div class="dot">✗</div>Facturación electrónica automática</div>
+        <div class="check-item"><div class="dot">✗</div>Inventario automático sincronizado</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PLATAFORMAS -->
+<section class="platforms">
+  <div class="section-label">Las plataformas</div>
+  <h2 style="font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,40px);font-weight:700;margin-bottom:8px">¿En qué confía tu tienda?</h2>
+  <p style="color:var(--muted);font-size:15px;margin-bottom:8px">Estas son las 3 plataformas que hacen funcionar tu tienda. Todas son gratuitas y pertenecen a empresas líderes mundiales.</p>
+
+  <div class="platform-row">
+    <div class="platform-logo">📊</div>
+    <div class="platform-info">
+      <h3>Google Sheets + Apps Script</h3>
+      <p>Tu base de datos y el motor de tu tienda. Aquí se guardan todos tus productos, clientes y pedidos. Puedes ver todo en tiempo real desde tu celular con tu cuenta de Google.</p>
+      <span class="platform-tag tag-google">Google — empresa de confianza mundial</span>
+      <span class="platform-tag tag-free" style="margin-left:6px">Gratis</span>
+    </div>
+  </div>
+
+  <div class="platform-row">
+    <div class="platform-logo">🐙</div>
+    <div class="platform-info">
+      <h3>GitHub Pages</h3>
+      <p>Aquí vive la página que ven tus clientes. GitHub es propiedad de Microsoft y es donde se alojan millones de sitios web del mundo. Tiene 99.9% de disponibilidad garantizada.</p>
+      <span class="platform-tag tag-free">Gratis hasta 100GB/mes de tráfico</span>
+    </div>
+  </div>
+
+  <div class="alert-box">
+    <div class="alert-icon">⚠️</div>
+    <div>
+      <h4>Lo único que debes saber sobre riesgos</h4>
+      <p>Como cualquier servicio gratuito, Google y GitHub pueden cambiar sus políticas en el futuro, aunque es muy poco probable que afecten tiendas pequeñas. Lo importante: <strong style="color:var(--text)">tus datos siempre son tuyos</strong> — están en tu propio Google Drive y puedes exportarlos cuando quieras.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- LO QUE NECESITAS -->
+<section class="section">
+  <div class="section-label">Requisitos</div>
+  <h2>Lo único que necesitas tener</h2>
+  <p>No necesitas saber de tecnología. Solo necesitas:</p>
+  <div class="cards" style="margin-top:24px">
+    <div class="card">
+      <div class="card-icon">📧</div>
+      <h3>Una cuenta de Google</h3>
+      <p>Un Gmail es suficiente. Probablemente ya tienes uno. Con eso se configura toda la tienda.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📸</div>
+      <h3>Fotos de tus productos</h3>
+      <p>Las fotos de tus productos para mostrarlos en el catálogo. Pueden ser desde tu celular.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">💬</div>
+      <h3>Tu número de WhatsApp</h3>
+      <p>Para que tus clientes puedan contactarte directamente desde la tienda con un solo clic.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FOOTER -->
+<footer>
+  <p style="font-size:22px;margin-bottom:12px">🛍️</p>
+  <p><strong>¿Tienes dudas?</strong> Contáctanos por WhatsApp antes de contratar.</p>
+  <p style="margin-top:8px;opacity:.5">Este documento es informativo y forma parte del servicio de tienda online.</p>
+</footer>
+
+</body>
+</html>
