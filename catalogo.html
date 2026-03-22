@@ -429,6 +429,9 @@ async function loadStoreInfo() {
   var name = store.name || 'Mi Tienda';
   var rawCfg = store.config || {};
   STORE_CFG = (typeof rawCfg === 'string') ? JSON.parse(rawCfg) : rawCfg;
+  var planInfo = JSON.parse(localStorage.getItem('ld_plan_info')||'{}');
+  var allowMayorista = planInfo.allowMayorista === true;
+  document.getElementById('p-wholesale').closest('.field-row').style.display = allowMayorista ? '' : 'none';
   updateTopbar(name);
   if (STORE_CFG.logo) {
     document.getElementById('topbar-logo').innerHTML = '<img src="'+fixImgUrl(STORE_CFG.logo)+'" style="width:100%;height:100%;object-fit:cover">';
@@ -701,7 +704,7 @@ function extendSession()   { resetInactTimer(); toast('Sesión extendida ✅','s
 resetInactTimer();
 
 function logout() {
-  ['ld_token','ld_store','ld_role','ld_backend'].forEach(function(k){ localStorage.removeItem(k); });
+['ld_token','ld_store','ld_role','ld_backend','ld_plan_info'].forEach(function(k){ localStorage.removeItem(k); });
   location.reload();
 }
 </script>
