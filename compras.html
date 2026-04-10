@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Compras — LandingKit Inventario</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#f4f4f0;--surface:#fff;--surface2:#f9f9f6;--border:#e8e8e2;
+  --accent:#1a1a1a;--accent2:#059669;--accent2-dim:#05966915;
+  --text:#1a1a1a;--muted:#888;
+  --danger:#ef4444;--warn:#f59e0b;--success:#16a34a;
+  --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* NO SESSION */
+.no-session{position:fixed;inset:0;background:var(--accent);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:24px;text-align:center}
+.no-session.show{display:flex}
+.no-session-ico{font-size:40px}
+.no-session-title{font-family:var(--font-d);font-size:18px;font-weight:800;color:#fff}
+.no-session-sub{font-size:13px;color:#555;line-height:1.5;max-width:280px}
+.no-session-btn{padding:12px 24px;background:var(--accent2);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-b)}
+
+/* APP */
+.app{display:none;flex-direction:column;min-height:100vh}
+.app.visible{display:flex}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-badge{background:var(--accent2);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px}
+.topbar-name{font-family:var(--font-d);font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.topbar-right{display:flex;align-items:center;gap:6px}
+
+/* CONTENT */
+.content{padding:16px;flex:1}
+
+/* BTNS */
+.btn{padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-b);display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.btn.danger{color:var(--danger);border-color:#fecaca}
+.btn.warn{color:var(--warn);border-color:#fde68a}
+.btn.sm{padding:7px 12px;font-size:12px;border-radius:8px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.full{width:100%;justify-content:center}
+.btn:disabled{opacity:.4;pointer-events:none}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 10px;text-align:center}
+.stat-val{font-family:var(--font-d);font-size:22px;font-weight:800}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.stat-accent{color:var(--accent2)}
+.stat-warn{color:var(--warn)}
+
+/* LIMIT BAR */
+.limit-bar{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:14px;display:none;align-items:center;justify-content:space-between;gap:8px}
+.limit-bar.show{display:flex}
+.limit-track{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden}
+.limit-fill{height:100%;border-radius:99px;background:var(--accent2);transition:width .3s}
+
+/* FILTERS */
+.filters-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;-webkit-overflow-scrolling:touch}
+.filters-bar::-webkit-scrollbar{display:none}
+.filter-chip{flex-shrink:0;padding:7px 14px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.filter-chip.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.chip-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:99px;font-size:10px;font-weight:700;padding:0 4px;background:rgba(0,0,0,.1)}
+.filter-chip.active .chip-count{background:rgba(255,255,255,.25)}
+
+/* SEARCH */
+.search-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-b);background:var(--surface);color:var(--text);margin-bottom:12px}
+.search-input:focus{outline:none;border-color:var(--accent2)}
+
+/* LIST */
+.purchase-list{display:flex;flex-direction:column;gap:10px}
+.purchase-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s}
+.purchase-card:hover{border-color:var(--accent2)}
+.purchase-card.confirmed{border-left:3px solid var(--accent2)}
+.purchase-card.pending{border-left:3px solid var(--warn)}
+.purchase-card.cancelled{border-left:3px solid var(--danger);opacity:.6}
+.pc-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pc-id{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.pc-name{font-weight:700;font-size:14px}
+.pc-sup{font-size:11px;color:var(--muted);margin-top:1px}
+.pc-total{font-family:var(--font-d);font-size:18px;font-weight:800;color:var(--accent2)}
+.pc-footer{padding:8px 14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pc-date{font-size:11px;color:var(--muted)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600}
+.badge.pending{background:#fef9c3;color:#854d0e}
+.badge.confirmed{background:#dcfce7;color:#166534}
+.badge.cancelled{background:#fee2e2;color:#991b1b}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:94vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
+.modal-hdr{padding:16px 20px 14px;border-bottom:1.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-family:var(--font-d);font-size:15px;font-weight:700}
+.modal-body{padding:20px}
+.modal-foot{padding:14px 20px;border-top:1.5px solid var(--border);display:flex;gap:8px}
+.modal-foot .btn{flex:1;justify-content:center}
+
+/* FORM */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-b);color:var(--text);background:var(--surface)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent2)}
+.field textarea{resize:vertical;min-height:70px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ITEMS EDITOR */
+.items-wrap{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.items-hdr{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.items-hdr-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.item-row{padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.item-row:last-child{border-bottom:none}
+.item-img{width:36px;height:36px;border-radius:7px;background:var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.item-img img{width:100%;height:100%;object-fit:cover}
+.item-info{flex:1;min-width:0}
+.item-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-price{font-size:11px;color:var(--muted)}
+.item-controls{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.qty-btn{width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qty-val{font-size:13px;font-weight:700;min-width:22px;text-align:center}
+.cost-input{width:70px;padding:5px 7px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:var(--mono);text-align:right}
+.cost-input:focus{outline:none;border-color:var(--accent2)}
+.del-btn{width:28px;height:28px;border-radius:7px;border:1.5px solid #fecaca;background:#fef2f2;color:var(--danger);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* PROD SEARCH */
+.prod-search-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.prod-search-input{width:100%;padding:10px 14px;border:none;border-bottom:1px solid var(--border);font-size:13px;font-family:var(--font-b);outline:none;background:var(--surface)}
+.prod-search-list{max-height:220px;overflow-y:auto}
+.prod-search-item{padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s}
+.prod-search-item:last-child{border-bottom:none}
+.prod-search-item:hover{background:var(--surface2)}
+.prod-search-name{font-size:13px;font-weight:600}
+.prod-search-meta{font-size:11px;color:var(--muted)}
+
+/* DETAIL */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.dl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.dv{font-weight:600;font-size:13px;word-break:break-word}
+
+/* CONFIRM */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:center;justify-content:center;padding:20px}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:var(--surface);border-radius:16px;padding:24px;max-width:320px;width:100%;text-align:center}
+.confirm-icon{font-size:36px;margin-bottom:12px}
+.confirm-title{font-family:var(--font-d);font-size:16px;font-weight:800;margin-bottom:6px}
+.confirm-msg{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.confirm-btns{display:flex;gap:8px}
+.confirm-btns .btn{flex:1;justify-content:center}
+
+/* EMPTY / SPINNER */
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-ico{font-size:40px;margin-bottom:12px}
+.empty h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.empty p{font-size:13px}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle}
+.spinner-big{width:32px;height:32px;border-width:3px;margin:0 auto 16px;display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOTAL ROW */
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:2px solid var(--border);margin-top:8px}
+.total-label{font-weight:600;font-size:14px}
+.total-val{font-family:var(--font-d);font-size:24px;font-weight:800;color:var(--accent2)}
+
+/* SESSION WARN */
+.session-warn{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.3);align-items:center;gap:10px;border:1.5px solid #333}
+.session-warn.show{display:flex}
+.session-warn-btn{background:var(--accent2);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-b)}
+
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);border-radius:10px;padding:11px 18px;font-size:13px;font-weight:600;z-index:9999;display:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+#toast.success{background:var(--success);color:#fff}
+#toast.error{background:var(--danger);color:#fff}
+#toast.warn{background:var(--warn);color:#fff}
+
+@media(min-width:768px){
+  .overlay{align-items:center}
+  .modal{border-radius:14px;max-width:560px;width:100%}
+  .content{max-width:860px;margin:0 auto;padding:24px 16px}
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- NO SESSION -->
+<div class="no-session" id="no-session">
+  <div class="no-session-ico">🔒</div>
+  <div class="no-session-title">Sesión no encontrada</div>
+  <div class="no-session-sub">Accede primero desde el panel principal de LandingKit.</div>
+  <button class="no-session-btn" onclick="history.back()">← Volver al panel</button>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-badge">📦</span>
+      <div class="topbar-name" id="topbar-name">Compras</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn sm ghost" onclick="loadAll()" title="Actualizar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      </button>
+      <button class="btn primary sm" onclick="openNewPurchase()" id="btn-nueva">+ Nueva compra</button>
+      <button class="btn ghost sm" onclick="history.back()">← Panel</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val stat-accent" id="stat-mes">0</div>
+        <div class="stat-lbl">Compras este mes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val stat-warn" id="stat-pend">0</div>
+        <div class="stat-lbl">Pendientes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-total-mes" style="font-size:15px">$0</div>
+        <div class="stat-lbl">Invertido mes</div>
+      </div>
+    </div>
+
+    <!-- LIMIT BAR -->
+    <div class="limit-bar" id="limit-bar">
+      <div style="font-size:11px;font-weight:600;color:var(--muted)" id="limit-txt">0 / 20 compras este mes</div>
+      <div class="limit-track"><div class="limit-fill" id="limit-fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters-bar">
+      <div class="filter-chip active" data-status="" onclick="setFilter(this,'')">Todas <span class="chip-count" id="cnt-all">0</span></div>
+      <div class="filter-chip" data-status="pending"   onclick="setFilter(this,'pending')">⏳ Pendientes <span class="chip-count" id="cnt-pending">0</span></div>
+      <div class="filter-chip" data-status="confirmed" onclick="setFilter(this,'confirmed')">✅ Confirmadas <span class="chip-count" id="cnt-confirmed">0</span></div>
+      <div class="filter-chip" data-status="cancelled" onclick="setFilter(this,'cancelled')">✕ Canceladas <span class="chip-count" id="cnt-cancelled">0</span></div>
+    </div>
+
+    <!-- SEARCH -->
+    <input class="search-input" id="search-input" placeholder="🔍 Buscar por proveedor o ID..." oninput="renderList()">
+
+    <!-- LIST -->
+    <div id="purchase-list">
+      <div class="empty"><div class="spinner spinner-big"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ MODAL: NUEVA COMPRA ══════════ -->
+<div class="overlay" id="modal-new">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Nueva compra</div>
+      <button class="btn ghost sm" onclick="closeModal('new')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Paso 1: Datos generales -->
+      <div id="step-info">
+        <div class="field">
+          <label>Proveedor</label>
+          <select id="sup-select" onchange="onSupplierChange()">
+            <option value="">— Sin proveedor —</option>
+          </select>
+        </div>
+        <div id="sup-manual" style="display:none">
+          <div class="field"><label>Nombre del proveedor (manual)</label><input id="sup-name-manual" placeholder="Distribuidora XYZ"/></div>
+        </div>
+        <div class="field"><label>Notas / referencia</label><textarea id="new-notes" placeholder="Número de factura, referencia, etc."></textarea></div>
+        <div style="border-top:1.5px solid var(--border);padding-top:14px;margin-top:4px">
+          <div class="items-hdr" style="padding:0 0 10px;background:transparent;border:none">
+            <div class="items-hdr-title">Productos a comprar</div>
+            <button class="btn sm primary" onclick="toggleProdSearch()">+ Agregar producto</button>
+          </div>
+          <!-- Buscador de productos -->
+          <div class="prod-search-wrap" id="prod-search-wrap" style="display:none">
+            <input class="prod-search-input" id="prod-search-input" placeholder="🔍 Buscar producto del catálogo..." oninput="renderProdSearch(this.value)">
+            <div class="prod-search-list" id="prod-search-list"></div>
+          </div>
+          <!-- Items seleccionados -->
+          <div class="items-wrap" id="items-wrap">
+            <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Sin productos. Agrega uno arriba ↑</div>
+          </div>
+          <div class="total-row">
+            <div class="total-label">Total estimado</div>
+            <div class="total-val" id="new-total">$0.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('new')">Cancelar</button>
+      <button class="btn primary" onclick="savePurchase()" id="btn-save">Crear compra</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: DETALLE COMPRA ══════════ -->
+<div class="overlay" id="modal-detail">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="detail-title">Detalle de compra</div>
+      <button class="btn ghost sm" onclick="closeModal('detail')">✕</button>
+    </div>
+    <div class="modal-body" id="detail-body">
+      <div class="empty"><div class="spinner spinner-big"></div></div>
+    </div>
+    <div class="modal-foot" id="detail-foot"></div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: PROVEEDORES ══════════ -->
+<div class="overlay" id="modal-suppliers">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Proveedores</div>
+      <button class="btn ghost sm" onclick="closeModal('suppliers')">✕</button>
+    </div>
+    <div class="modal-body">
+      <button class="btn primary full" onclick="openNewSupplier()" style="margin-bottom:14px">+ Nuevo proveedor</button>
+      <div id="suppliers-list"><div class="empty"><div class="spinner spinner-big"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: NUEVO PROVEEDOR ══════════ -->
+<div class="overlay" id="modal-new-supplier" style="z-index:300">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="sup-modal-title">Nuevo proveedor</div>
+      <button class="btn ghost sm" onclick="closeModal('new-supplier')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-sup-id">
+      <div class="field"><label>Nombre *</label><input id="s-name" placeholder="Nombre del proveedor"/></div>
+      <div class="field-row">
+        <div class="field"><label>Contacto</label><input id="s-contact" placeholder="Nombre contacto"/></div>
+        <div class="field"><label>Teléfono</label><input id="s-phone" placeholder="+52 555 000 0000"/></div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" id="s-email" placeholder="proveedor@email.com"/></div>
+      <div class="field"><label>Dirección</label><input id="s-address" placeholder="Calle, ciudad..."/></div>
+      <div class="field"><label>Notas</label><textarea id="s-notes" placeholder="Condiciones de pago, etc."></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('new-supplier')">Cancelar</button>
+      <button class="btn primary" onclick="saveSupplier()" id="btn-save-sup">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon">⚠️</div>
+    <div class="confirm-title" id="confirm-title">¿Confirmar?</div>
+    <div class="confirm-msg" id="confirm-msg">Esta acción no se puede deshacer.</div>
+    <div class="confirm-btns">
+      <button class="btn" onclick="resolveConfirm(false)">Cancelar</button>
+      <button class="btn primary" id="confirm-ok-btn" onclick="resolveConfirm(true)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- SESSION WARN -->
+<div class="session-warn" id="session-warn">
+  <span>⏱ Tu sesión expira en 2 minutos</span>
+  <button class="session-warn-btn" onclick="extendSession()">Continuar</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ─────────────────────────────────────────
+   CONFIG & ESTADO
+───────────────────────────────────────── */
+const BACKEND     = new URLSearchParams(location.search).get('backend') || localStorage.getItem('ld_backend') || '';
+const INV_BACKEND = new URLSearchParams(location.search).get('inv_backend') || localStorage.getItem('ld_inv_backend') || '';
+const TOKEN       = localStorage.getItem('ld_token')  || '';
+const STORE_ID    = localStorage.getItem('ld_store')  || '';
+
+let STORE_CFG   = {};
+let PLAN_INFO   = { allowInventario: true, maxComprasMes: 0 };
+let ALL_PURCHASES = [];
+let ALL_PRODUCTS  = [];
+let ALL_SUPPLIERS = [];
+let CURRENT_FILTER = '';
+let NEW_ITEMS      = [];   // líneas de la nueva compra
+let _confirmResolve = null;
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+window.addEventListener('load', async function() {
+  if (!TOKEN || !STORE_ID) {
+    document.getElementById('no-session').classList.add('show');
+    return;
+  }
+  if (!INV_BACKEND) {
+    toast('Falta URL del backend de inventario. Configura inv_backend en la URL.', 'error');
+  }
+  document.getElementById('app').classList.add('visible');
+  resetInactTimer();
+  await loadAll();
+});
+
+/* ─────────────────────────────────────────
+   API
+───────────────────────────────────────── */
+async function postAPI(backend, payload) {
+  const res = await fetch(backend, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+async function api(action, data) {
+  data = data || {};
+  try {
+    const payload = Object.assign({ action, storeId: STORE_ID, token: TOKEN }, data);
+    const json    = await postAPI(INV_BACKEND || BACKEND, payload);
+    if (json.error) throw new Error(json.error);
+    return json;
+  } catch(e) { toast(e.message, 'error'); return null; }
+}
+
+async function apiMain(action, data) {
+  data = data || {};
+  try {
+    const payload = Object.assign({ action, storeId: STORE_ID, token: TOKEN }, data);
+    const json    = await postAPI(BACKEND, payload);
+    if (json.error) throw new Error(json.error);
+    return json;
+  } catch(e) { toast(e.message, 'error'); return null; }
+}
+
+/* ─────────────────────────────────────────
+   CARGA INICIAL
+───────────────────────────────────────── */
+async function loadAll() {
+  document.getElementById('purchase-list').innerHTML = '<div class="empty"><div class="spinner spinner-big"></div></div>';
+
+  const [storeRes, planRes, purchRes, prodRes, supRes] = await Promise.all([
+    apiMain('store.info'),
+    api('inv.plan.check'),
+    api('purchase.list'),
+    api('inv.product.list'),
+    api('supplier.list'),
+  ]);
+
+  // Store info
+  if (storeRes && storeRes.store) {
+    const cfg = storeRes.store.config || {};
+    STORE_CFG = typeof cfg === 'string' ? JSON.parse(cfg) : cfg;
+    document.getElementById('topbar-name').textContent = (storeRes.store.name || 'Mi Tienda') + ' · Compras';
+  }
+
+  // Plan
+  if (planRes && planRes.limits) {
+    PLAN_INFO = planRes.limits;
+    if (!PLAN_INFO.allowInventario) {
+      document.getElementById('btn-nueva').disabled = true;
+      toast('Tu plan no incluye el módulo de inventario', 'warn');
+    }
+  }
+
+  // Purchases
+  ALL_PURCHASES = (purchRes && purchRes.purchases) ? purchRes.purchases : [];
+  ALL_PRODUCTS  = (prodRes  && prodRes.products)   ? prodRes.products   : [];
+  ALL_SUPPLIERS = (supRes   && supRes.suppliers)    ? supRes.suppliers   : [];
+
+  updateStats();
+  updateLimitBar();
+  renderList();
+  populateSupplierSelect();
+}
+
+/* ─────────────────────────────────────────
+   STATS
+───────────────────────────────────────── */
+function updateStats() {
+  const now      = new Date();
+  const mesAct   = now.getMonth(), anioAct = now.getFullYear();
+  const esMes    = ALL_PURCHASES.filter(p => {
+    if (!p.createdAt) return false;
+    const d = new Date(p.createdAt);
+    return d.getMonth() === mesAct && d.getFullYear() === anioAct;
+  });
+  const pending  = ALL_PURCHASES.filter(p => p.status === 'pending').length;
+  const totalMes = esMes.filter(p => p.status === 'confirmed').reduce((s,p) => s + Number(p.total||0), 0);
+
+  document.getElementById('stat-mes').textContent       = esMes.length;
+  document.getElementById('stat-pend').textContent      = pending;
+  document.getElementById('stat-total-mes').textContent = fmt(totalMes);
+
+  // Counts para chips
+  document.getElementById('cnt-all').textContent       = ALL_PURCHASES.length;
+  document.getElementById('cnt-pending').textContent   = ALL_PURCHASES.filter(p=>p.status==='pending').length;
+  document.getElementById('cnt-confirmed').textContent = ALL_PURCHASES.filter(p=>p.status==='confirmed').length;
+  document.getElementById('cnt-cancelled').textContent = ALL_PURCHASES.filter(p=>p.status==='cancelled').length;
+}
+
+function updateLimitBar() {
+  const bar = document.getElementById('limit-bar');
+  const max = PLAN_INFO.maxComprasMes;
+  if (!max || max === 0) { bar.classList.remove('show'); return; }
+  const now   = new Date();
+  const esMes = ALL_PURCHASES.filter(p => {
+    if (!p.createdAt) return false;
+    const d = new Date(p.createdAt);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+  const pct   = Math.min(100, Math.round((esMes / max) * 100));
+  const color = pct >= 100 ? '#ef4444' : pct >= 80 ? '#f59e0b' : '#059669';
+  document.getElementById('limit-txt').textContent       = esMes + ' / ' + max + ' compras este mes';
+  document.getElementById('limit-fill').style.width      = pct + '%';
+  document.getElementById('limit-fill').style.background = color;
+  bar.classList.add('show');
+  document.getElementById('btn-nueva').disabled = pct >= 100;
+}
+
+/* ─────────────────────────────────────────
+   RENDER LIST
+───────────────────────────────────────── */
+function setFilter(el, status) {
+  CURRENT_FILTER = status;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+function getFiltered() {
+  const q    = (document.getElementById('search-input').value || '').toLowerCase();
+  let   list = CURRENT_FILTER
+    ? ALL_PURCHASES.filter(p => p.status === CURRENT_FILTER)
+    : ALL_PURCHASES;
+  if (q) list = list.filter(p =>
+    (p.purchaseId    || '').toLowerCase().includes(q) ||
+    (p.supplierName  || '').toLowerCase().includes(q) ||
+    (p.notes         || '').toLowerCase().includes(q)
+  );
+  return list.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+function renderList() {
+  const list = getFiltered();
+  const wrap = document.getElementById('purchase-list');
+  if (!list.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-ico">📦</div><h3>Sin compras</h3><p>' + (CURRENT_FILTER ? 'No hay compras con este estado' : 'Registra tu primera compra a proveedor') + '</p></div>';
+    return;
+  }
+  wrap.innerHTML = '<div class="purchase-list">' + list.map(p => {
+    const date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('es-MX') : '—';
+    return `<div class="purchase-card ${p.status}" onclick="openDetail('${esc(p.purchaseId)}')">
+      <div class="pc-header">
+        <div>
+          <div class="pc-id">${esc(p.purchaseId)}</div>
+          <div class="pc-name">${esc(p.supplierName || 'Sin proveedor')}</div>
+          <div class="pc-sup">${esc(p.notes || '')}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="pc-total">${fmt(p.total)}</div>
+          <span class="badge ${p.status}">${labelStatus(p.status)}</span>
+        </div>
+      </div>
+      <div class="pc-footer">
+        <div class="pc-date">${date}</div>
+        <div style="display:flex;gap:6px">
+          ${p.status === 'pending' ? `<button class="btn sm primary" onclick="event.stopPropagation();confirmPurchase('${esc(p.purchaseId)}')">✅ Confirmar</button>` : ''}
+          ${p.status === 'pending' ? `<button class="btn sm danger" onclick="event.stopPropagation();cancelPurchase('${esc(p.purchaseId)}')">✕</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+/* ─────────────────────────────────────────
+   NUEVA COMPRA
+───────────────────────────────────────── */
+function openNewPurchase() {
+  NEW_ITEMS = [];
+  document.getElementById('sup-select').value = '';
+  document.getElementById('new-notes').value  = '';
+  document.getElementById('sup-name-manual').value = '';
+  document.getElementById('sup-manual').style.display = 'none';
+  document.getElementById('prod-search-wrap').style.display = 'none';
+  document.getElementById('prod-search-input').value = '';
+  renderNewItems();
+  document.getElementById('modal-new').classList.add('open');
+}
+
+function onSupplierChange() {
+  const val = document.getElementById('sup-select').value;
+  document.getElementById('sup-manual').style.display = val === '__manual__' ? '' : 'none';
+}
+
+function populateSupplierSelect() {
+  const sel = document.getElementById('sup-select');
+  sel.innerHTML = '<option value="">— Sin proveedor —</option>' +
+    ALL_SUPPLIERS.map(s => `<option value="${esc(s.supplierId)}">${esc(s.name)}</option>`).join('') +
+    '<option value="__manual__">✏️ Escribir nombre...</option>';
+}
+
+function toggleProdSearch() {
+  const wrap = document.getElementById('prod-search-wrap');
+  const show = wrap.style.display === 'none';
+  wrap.style.display = show ? '' : 'none';
+  if (show) {
+    renderProdSearch('');
+    document.getElementById('prod-search-input').focus();
+  }
+}
+
+function renderProdSearch(q) {
+  q = (q || '').toLowerCase();
+  const active = ALL_PRODUCTS.filter(p =>
+    (p.active === true || p.active === 'TRUE') &&
+    (!q || (p.name || '').toLowerCase().includes(q))
+  );
+  const list = document.getElementById('prod-search-list');
+  if (!active.length) {
+    list.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:13px">Sin resultados</div>';
+    return;
+  }
+  list.innerHTML = active.map(p => `
+    <div class="prod-search-item" onclick="addItemToNew('${esc(p.productId)}')">
+      <div class="item-img">
+        ${p.imageUrl ? `<img src="${fixImgUrl(p.imageUrl)}" onerror="this.style.display='none'">` : '📦'}
+      </div>
+      <div>
+        <div class="prod-search-name">${esc(p.name)}</div>
+        <div class="prod-search-meta">Stock: ${p.stock || 0} · Precio: ${fmt(p.price)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addItemToNew(productId) {
+  const prod = ALL_PRODUCTS.find(p => p.productId === productId);
+  if (!prod) return;
+  const exist = NEW_ITEMS.find(i => i.productId === productId);
+  if (exist) { exist.qty++; }
+  else {
+    NEW_ITEMS.push({
+      productId:   productId,
+      productName: prod.name,
+      imageUrl:    prod.imageUrl || '',
+      qty:         1,
+      unitCost:    Number(prod.price || 0),
+    });
+  }
+  document.getElementById('prod-search-wrap').style.display = 'none';
+  renderNewItems();
+  toast(prod.name + ' agregado', 'success');
+}
+
+function renderNewItems() {
+  const wrap = document.getElementById('items-wrap');
+  if (!NEW_ITEMS.length) {
+    wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Sin productos. Agrega uno arriba ↑</div>';
+    document.getElementById('new-total').textContent = fmt(0);
+    return;
+  }
+  wrap.innerHTML = NEW_ITEMS.map((item, idx) => `
+    <div class="item-row">
+      <div class="item-img">
+        ${item.imageUrl ? `<img src="${fixImgUrl(item.imageUrl)}" onerror="this.style.display='none'">` : '📦'}
+      </div>
+      <div class="item-info">
+        <div class="item-name">${esc(item.productName)}</div>
+        <div class="item-price">Costo unitario:</div>
+      </div>
+      <div class="item-controls">
+        <button class="qty-btn" onclick="changeQty(${idx},-1)">−</button>
+        <span class="qty-val" id="qty-${idx}">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${idx},1)">+</button>
+        <input class="cost-input" type="number" min="0" step="0.01"
+          value="${item.unitCost}"
+          onchange="changeCost(${idx},this.value)"
+          onclick="event.stopPropagation()"
+          id="cost-${idx}">
+      </div>
+      <button class="del-btn" onclick="removeItem(${idx})">🗑</button>
+    </div>
+  `).join('');
+  recalcTotal();
+}
+
+function changeQty(idx, delta) {
+  const item = NEW_ITEMS[idx];
+  const nv   = (item.qty || 1) + delta;
+  if (nv < 1) { removeItem(idx); return; }
+  item.qty = nv;
+  const el = document.getElementById('qty-'+idx);
+  if (el) el.textContent = nv;
+  recalcTotal();
+}
+
+function changeCost(idx, val) {
+  NEW_ITEMS[idx].unitCost = Number(val) || 0;
+  recalcTotal();
+}
+
+function removeItem(idx) {
+  NEW_ITEMS.splice(idx, 1);
+  renderNewItems();
+}
+
+function recalcTotal() {
+  const total = NEW_ITEMS.reduce((s, i) => s + (i.qty * i.unitCost), 0);
+  document.getElementById('new-total').textContent = fmt(total);
+}
+
+async function savePurchase() {
+  if (!NEW_ITEMS.length) { toast('Agrega al menos un producto', 'error'); return; }
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+
+  const supVal  = document.getElementById('sup-select').value;
+  const supId   = supVal && supVal !== '__manual__' ? supVal : '';
+  const supName = supVal === '__manual__'
+    ? document.getElementById('sup-name-manual').value.trim()
+    : (ALL_SUPPLIERS.find(s => s.supplierId === supVal)?.name || '');
+  const notes   = document.getElementById('new-notes').value.trim();
+
+  const res = await api('purchase.create', {
+    supplierId:   supId,
+    supplierName: supName,
+    notes,
+    items: JSON.stringify(NEW_ITEMS.map(i => ({
+      productId:   i.productId,
+      productName: i.productName,
+      quantity:    i.qty,
+      unitCost:    i.unitCost,
+    }))),
+  });
+
+  btn.disabled = false; btn.textContent = 'Crear compra';
+  if (!res) return;
+  toast('Compra creada ✅ — confirma para actualizar stock', 'success');
+  closeModal('new');
+  await loadAll();
+}
+
+/* ─────────────────────────────────────────
+   CONFIRMAR / CANCELAR
+───────────────────────────────────────── */
+async function confirmPurchase(purchaseId) {
+  const ok = await showConfirm('✅', 'Confirmar compra',
+    'Al confirmar, el stock de los productos se actualizará automáticamente.',
+    'Sí, confirmar');
+  if (!ok) return;
+  const res = await api('purchase.confirm', { purchaseId });
+  if (!res) return;
+  toast('Stock actualizado ✅', 'success');
+  closeModal('detail');
+  await loadAll();
+}
+
+async function cancelPurchase(purchaseId) {
+  const ok = await showConfirm('✕', 'Cancelar compra',
+    '¿Seguro que deseas cancelar esta compra? El stock no se verá afectado.',
+    'Sí, cancelar', true);
+  if (!ok) return;
+  const res = await api('purchase.cancel', { purchaseId, reason: 'Cancelado por usuario' });
+  if (!res) return;
+  toast('Compra cancelada', 'warn');
+  closeModal('detail');
+  await loadAll();
+}
+
+/* ─────────────────────────────────────────
+   DETALLE
+───────────────────────────────────────── */
+async function openDetail(purchaseId) {
+  document.getElementById('detail-title').textContent = purchaseId;
+  document.getElementById('detail-body').innerHTML    = '<div class="empty"><div class="spinner spinner-big"></div></div>';
+  document.getElementById('detail-foot').innerHTML    = '';
+  document.getElementById('modal-detail').classList.add('open');
+
+  const res = await api('purchase.detail', { purchaseId });
+  if (!res) return;
+
+  const p     = res.purchase;
+  const items = res.items || [];
+  const date  = p.createdAt  ? new Date(p.createdAt).toLocaleDateString('es-MX')  : '—';
+  const conf  = p.confirmedAt? new Date(p.confirmedAt).toLocaleDateString('es-MX') : '—';
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-grid">
+      ${di('ID',           p.purchaseId)}
+      ${di('Estado',       `<span class="badge ${p.status}">${labelStatus(p.status)}</span>`)}
+      ${di('Proveedor',    p.supplierName || '—')}
+      ${di('Creada',       date)}
+      ${di('Confirmada',   conf)}
+      ${di('Notas',        p.notes || '—')}
+    </div>
+    <div class="items-wrap" style="margin-bottom:14px">
+      <div class="items-hdr"><div class="items-hdr-title">Productos</div></div>
+      ${items.map(i => `
+        <div class="item-row">
+          <div class="item-img">📦</div>
+          <div class="item-info">
+            <div class="item-name">${esc(i.productName || i.productId)}</div>
+            <div class="item-price">${fmt(i.unitCost)} c/u</div>
+          </div>
+          <div style="font-size:13px;font-weight:700;flex-shrink:0">
+            x${i.quantity} = ${fmt(i.subtotal)}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="total-row">
+      <div class="total-label">Total</div>
+      <div class="total-val">${fmt(p.total)}</div>
+    </div>
+  `;
+
+  const foot = document.getElementById('detail-foot');
+  if (p.status === 'pending') {
+    foot.innerHTML = `
+      <button class="btn danger" onclick="cancelPurchase('${esc(p.purchaseId)}')">✕ Cancelar</button>
+      <button class="btn primary" onclick="confirmPurchase('${esc(p.purchaseId)}')">✅ Confirmar y actualizar stock</button>
+    `;
+  } else {
+    foot.innerHTML = '<button class="btn full" onclick="closeModal(\'detail\')">Cerrar</button>';
+  }
+}
+
+/* ─────────────────────────────────────────
+   PROVEEDORES
+───────────────────────────────────────── */
+function openSuppliersModal() {
+  document.getElementById('modal-suppliers').classList.add('open');
+  renderSuppliersList();
+}
+
+function renderSuppliersList() {
+  const wrap = document.getElementById('suppliers-list');
+  if (!ALL_SUPPLIERS.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-ico">🏭</div><h3>Sin proveedores</h3><p>Agrega tu primer proveedor</p></div>';
+    return;
+  }
+  wrap.innerHTML = ALL_SUPPLIERS.map(s => `
+    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:700;font-size:14px">${esc(s.name)}</div>
+        <div style="font-size:12px;color:var(--muted)">${esc(s.phone || '')} ${s.email ? '· '+esc(s.email) : ''}</div>
+        ${s.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:3px">${esc(s.notes)}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn sm" onclick="editSupplier('${esc(s.supplierId)}')">Editar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openNewSupplier() {
+  document.getElementById('sup-modal-title').textContent = 'Nuevo proveedor';
+  document.getElementById('edit-sup-id').value = '';
+  ['s-name','s-contact','s-phone','s-email','s-address','s-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('modal-new-supplier').classList.add('open');
+}
+
+function editSupplier(supplierId) {
+  const s = ALL_SUPPLIERS.find(x => x.supplierId === supplierId);
+  if (!s) return;
+  document.getElementById('sup-modal-title').textContent = 'Editar proveedor';
+  document.getElementById('edit-sup-id').value = supplierId;
+  document.getElementById('s-name').value    = s.name    || '';
+  document.getElementById('s-contact').value = s.contact || '';
+  document.getElementById('s-phone').value   = s.phone   || '';
+  document.getElementById('s-email').value   = s.email   || '';
+  document.getElementById('s-address').value = s.address || '';
+  document.getElementById('s-notes').value   = s.notes   || '';
+  document.getElementById('modal-new-supplier').classList.add('open');
+}
+
+async function saveSupplier() {
+  const btn  = document.getElementById('btn-save-sup');
+  const name = document.getElementById('s-name').value.trim();
+  if (!name) { toast('El nombre es requerido', 'error'); return; }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+
+  const editId = document.getElementById('edit-sup-id').value;
+  const data   = {
+    name, contact: document.getElementById('s-contact').value.trim(),
+    phone:   document.getElementById('s-phone').value.trim(),
+    email:   document.getElementById('s-email').value.trim(),
+    address: document.getElementById('s-address').value.trim(),
+    notes:   document.getElementById('s-notes').value.trim(),
+  };
+  const res = editId
+    ? await api('supplier.update', { supplierId: editId, ...data })
+    : await api('supplier.create', data);
+
+  btn.disabled = false; btn.textContent = 'Guardar';
+  if (!res) return;
+  toast(editId ? 'Proveedor actualizado' : 'Proveedor creado ✅', 'success');
+  closeModal('new-supplier');
+  const supRes = await api('supplier.list');
+  if (supRes) ALL_SUPPLIERS = supRes.suppliers || [];
+  renderSuppliersList();
+  populateSupplierSelect();
+}
+
+/* ─────────────────────────────────────────
+   MODAL & CONFIRM
+───────────────────────────────────────── */
+function openModal(id)  { document.getElementById('modal-'+id).classList.add('open'); }
+function closeModal(id) { document.getElementById('modal-'+id).classList.remove('open'); }
+
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+function showConfirm(icon, title, msg, okLabel, isDanger) {
+  return new Promise(resolve => {
+    document.getElementById('confirm-icon').textContent   = icon    || '⚠️';
+    document.getElementById('confirm-title').textContent  = title   || '¿Estás seguro?';
+    document.getElementById('confirm-msg').textContent    = msg     || '';
+    document.getElementById('confirm-ok-btn').textContent = okLabel || 'Confirmar';
+    document.getElementById('confirm-ok-btn').className   = isDanger ? 'btn danger' : 'btn primary';
+    _confirmResolve = resolve;
+    document.getElementById('confirm-overlay').classList.add('open');
+  });
+}
+
+function resolveConfirm(val) {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  if (_confirmResolve) { _confirmResolve(val); _confirmResolve = null; }
+}
+
+/* ─────────────────────────────────────────
+   SESIÓN — inactividad 30 min
+───────────────────────────────────────── */
+let _inactWarn = null, _inactLogout = null;
+function resetInactTimer() {
+  clearTimeout(_inactWarn); clearTimeout(_inactLogout);
+  document.getElementById('session-warn').classList.remove('show');
+  _inactWarn = setTimeout(() => {
+    document.getElementById('session-warn').classList.add('show');
+    _inactLogout = setTimeout(logout, 2*60*1000);
+  }, 28*60*1000);
+}
+function extendSession() { resetInactTimer(); toast('Sesión extendida ✅', 'success'); }
+['click','touchstart','keypress','scroll'].forEach(e => document.addEventListener(e, resetInactTimer, true));
+
+function logout() {
+  ['ld_token','ld_store','ld_role','ld_backend','ld_inv_backend','ld_plan_info'].forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+
+/* ─────────────────────────────────────────
+   UTILIDADES
+───────────────────────────────────────── */
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function fmt(n) {
+  const cur = STORE_CFG.currency || 'MXN';
+  return new Intl.NumberFormat('es-MX',{style:'currency',currency:cur}).format(Number(n||0));
+}
+
+function fixImgUrl(url) {
+  if (!url) return '';
+  const m = url.match(/[?&]id=([\w-]+)/);
+  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+  const m2 = url.match(/\/d\/([\w-]+)/);
+  if (m2) return 'https://lh3.googleusercontent.com/d/' + m2[1];
+  return url;
+}
+
+function labelStatus(s) {
+  return { pending:'Pendiente', confirmed:'Confirmada', cancelled:'Cancelada' }[s] || s;
+}
+
+function di(label, val) {
+  return `<div><div class="dl">${label}</div><div class="dv">${val}</div></div>`;
+}
+
+function toast(msg, type) {
+  type = type || 'success';
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = type; el.style.display = 'block';
+  clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 3500);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) loadAll();
+});
+</script>
+<script src="lk-guardian.js"></script>
+</body>
+</html>
