@@ -285,9 +285,11 @@ input,select{font-family:var(--font);outline:none}
 
 <script>
 // ══ CONFIG ══════════════════════════════════════════════════
-var BACKEND     = new URLSearchParams(location.search).get('backend')     || localStorage.getItem('ld_backend')     || '';
-var INV_BACKEND = new URLSearchParams(location.search).get('inv_backend') || localStorage.getItem('ld_inv_backend') || '';
-var TOKEN       = localStorage.getItem('ld_token')  || '';
+
+const BACKEND     = params.get('backend')     || localStorage.getItem('ld_backend')     || 'https://script.google.com/macros/s/AKfycbxrdW7sLSiJNq_XF_xDjDgBl2rJppwwoRsEe-mNE8G-2BWOcI7DpyJpQYsyN8M-x-I/exec';
+const INV_BACKEND = params.get('inv_backend') || localStorage.getItem('ld_inv_backend') || 'https://script.google.com/macros/s/AKfycbx_vv2RH1FjLtVd4RlSXGZ5WooaDRjF7D7sl9O7FpXHz6OIaKIF8jXZiECp1m0VWFsC/exec';
+
+  var TOKEN       = localStorage.getItem('ld_token')  || '';
 var STORE_ID    = localStorage.getItem('ld_store')  || '';
 
 var MOVIMIENTOS_ALL  = [];
