@@ -212,43 +212,71 @@ tr:last-child td{border-bottom:none}
     <!-- Badge plan -->
     <div id="plan-badge" style="display:none;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--muted);text-align:center"></div>
 
+ 
+    
     <!-- Menu módulos -->
-    <div class="menu-grid">
-      <div class="menu-btn" data-mod="pedidos" onclick="openMod('pedidos.html')">
-        <span class="menu-badge" id="pending-badge">0</span>
-        <span class="menu-btn-ico">📦</span>
-        <span class="menu-btn-lbl">Pedidos</span>
-      </div>
-      <div class="menu-btn" data-mod="catalogo" onclick="openMod('catalogo.html')">
-        <span class="menu-btn-ico">🛍️</span>
-        <span class="menu-btn-lbl">Catálogo</span>
-      </div>
-      <div class="menu-btn" data-mod="clientes" onclick="openMod('clientes.html')">
-        <span class="menu-btn-ico">👥</span>
-        <span class="menu-btn-lbl">Clientes</span>
-      </div>
-      <div class="menu-btn owner-only" data-mod="compras" onclick="openMod('compras.html')">
-        <span class="menu-btn-ico">🛒</span>
-        <span class="menu-btn-lbl">Compras</span>
-      </div>
-      <div class="menu-btn" data-mod="inventario" onclick="openMod('inventario-fisico.html')">
-        <span class="menu-btn-ico">📋</span>
-        <span class="menu-btn-lbl">Inventario</span>
-      </div>
-      <div class="menu-btn owner-only" data-mod="reporte" onclick="openMod('reporte-movimientos.html')">
-        <span class="menu-btn-ico">📊</span>
-        <span class="menu-btn-lbl">Reportes</span>
-      </div>
-      <div class="menu-btn owner-only" onclick="openMod('info-cliente.html')">
-        <span class="menu-btn-ico">📋</span>
-        <span class="menu-btn-lbl">Info Cliente</span>
-      </div>
-      <div class="menu-btn owner-only" onclick="window.open('mensajes.html','_blank')">
-        <span class="menu-btn-ico">📣</span>
-        <span class="menu-btn-lbl">Mensajes</span>
-      </div>
-    </div>
+<div class="menu-grid">
 
+  <!-- Pedidos -->
+  <div class="menu-btn" data-mod="pedidos" onclick="openMod('pedidos.html')">
+    <span class="menu-badge" id="pending-badge">0</span>
+    <span class="menu-btn-ico">📦</span>
+    <span class="menu-btn-lbl">Pedidos</span>
+  </div>
+
+  <!-- Catálogo -->
+  <div class="menu-btn" data-mod="catalogo" onclick="openMod('catalogo.html')">
+    <span class="menu-btn-ico">🛍️</span>
+    <span class="menu-btn-lbl">Catálogo</span>
+  </div>
+
+  <!-- Clientes -->
+  <div class="menu-btn" data-mod="clientes" onclick="openMod('clientes.html')">
+    <span class="menu-btn-ico">👥</span>
+    <span class="menu-btn-lbl">Clientes</span>
+  </div>
+
+  <!-- Inventario -->
+  <div class="menu-btn" data-mod="inventario" onclick="openModInv('inventario-fisico.html')">
+    <span class="menu-btn-ico">📋</span>
+    <span class="menu-btn-lbl">Inventario</span>
+  </div>
+
+  <!-- ==================== SOLO PARA OWNER ==================== -->
+
+  <!-- Compras -->
+  <div class="menu-btn owner-only" data-mod="compras" onclick="openModInv('compras.html')">
+    <span class="menu-btn-ico">🛒</span>
+    <span class="menu-btn-lbl">Compras</span>
+  </div>
+
+  <!-- Proveedores -->
+  <div class="menu-btn owner-only" data-mod="proveedores" onclick="openModInv('proveedores.html')">
+    <span class="menu-btn-ico">🏭</span>
+    <span class="menu-btn-lbl">Proveedores</span>
+  </div>
+
+  <!-- Reportes -->
+  <div class="menu-btn owner-only" data-mod="reporte" onclick="openModInv('reporte-movimientos.html')">
+    <span class="menu-btn-ico">📊</span>
+    <span class="menu-btn-lbl">Reportes</span>
+  </div>
+
+  <!-- Info Cliente -->
+  <div class="menu-btn owner-only" onclick="openMod('info-cliente.html')">
+    <span class="menu-btn-ico">📋</span>
+    <span class="menu-btn-lbl">Info Cliente</span>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="menu-btn owner-only" onclick="window.open('mensajes.html','_blank')">
+    <span class="menu-btn-ico">📣</span>
+    <span class="menu-btn-lbl">Mensajes</span>
+  </div>
+
+</div>
+    
+    
     <!-- Pedidos recientes -->
     <div>
       <div class="section-title">Pedidos recientes</div>
