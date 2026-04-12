@@ -140,7 +140,7 @@ tr:last-child td{border-bottom:none}
   background:rgba(0,0,0,.15);border:none;border-radius:6px;
   padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
 }
-/* ── BOTÓN FLOTANTE VOLVER AL PANEL ── */
+  /* ── BOTÓN FLOTANTE VOLVER AL PANEL ── */
 #btn-back-panel{
   position:fixed;bottom:80px;right:16px;z-index:88;
   background:#6366f1;color:#fff;
@@ -168,7 +168,6 @@ tr:last-child td{border-bottom:none}
   padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
 }
 
-  
 </style>
 </head>
 <body>
@@ -763,44 +762,12 @@ function extendModSession() { resetModIdle(); }
 });
 
 resetModIdle();
-</script>
-  <script src="lk-guardian.js">
-/* ── VOLVER AL PANEL + MONITOR DE INACTIVIDAD ── */
-function goBackPanel() {
-  var backend = localStorage.getItem('ld_backend') || '';
-  var store   = localStorage.getItem('ld_store')   || '';
-  var base    = window.location.href.split('?')[0].replace(/[^\/]+$/, '');
-  var url     = base + 'index.html';
-  if (backend) url += '?backend=' + encodeURIComponent(backend);
-  if (store)   url += (backend ? '&' : '?') + 'store=' + encodeURIComponent(store);
-  window.location.href = url;
-}
-var _modIdleWarn=null, _modIdleClose=null, _modCloseCount=null;
-function resetModIdle() {
-  clearTimeout(_modIdleWarn); clearTimeout(_modIdleClose); clearInterval(_modCloseCount);
-  var w = document.getElementById('mod-inactive-warn');
-  if (w) w.classList.remove('show');
-  _modIdleWarn = setTimeout(function() {
-    if (w) w.classList.add('show');
-    var secs = 60;
-    var el = document.getElementById('mod-inactive-secs');
-    if (el) el.textContent = secs;
-    _modCloseCount = setInterval(function() {
-      secs--;
-      if (el) el.textContent = secs;
-      if (secs <= 0) { clearInterval(_modCloseCount); goBackPanel(); }
-    }, 1000);
-    _modIdleClose = setTimeout(goBackPanel, 60000);
-  }, 10 * 60 * 1000);
-}
-function extendModSession() { resetModIdle(); }
-['click','touchstart','keypress','scroll','mousemove'].forEach(function(ev) {
-  document.addEventListener(ev, resetModIdle, { passive: true });
-});
-resetModIdle();
 
 </script>
-  <!-- Botón flotante volver al panel -->
+  <script src="lk-guardian.js">
+
+</script>
+<!-- Botón flotante volver al panel -->
 <button id="btn-back-panel" onclick="goBackPanel()" title="Volver al panel principal">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
     <path d="M19 12H5M12 5l-7 7 7 7"/>
