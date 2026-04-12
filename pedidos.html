@@ -269,7 +269,8 @@ tr:last-child td{border-bottom:none}
 <div id="toast"></div>
 
 <script>
-const BACKEND = (new URLSearchParams(location.search).get('backend')) || localStorage.getItem('ld_backend') || 'https://script.google.com/macros/s/AKfycbwUhTHQkBhLIvF9KgP2bHpVeufIEaPCXZWo9-azz7mYrEEA79BPFCQxE68YQQxE5iw/exec';
+const BACKEND = (new URLSearchParams(location.search).get('backend')) || localStorage.getItem('ld_backend')
+  || 'https://script.google.com/macros/s/AKfycbwUhTHQkBhLIvF9KgP2bHpVeufIEaPCXZWo9-azz7mYrEEA79BPFCQxE68YQQxE5iw/exec';
 const TOKEN   = localStorage.getItem('ld_token')  || '';
 const STORE_ID= localStorage.getItem('ld_store')  || '';
 const STORE_BASE_URL = 'https://proyectosolaronline-ops.github.io/superOnline-Tienda/';
