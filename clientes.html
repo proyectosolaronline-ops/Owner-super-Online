@@ -137,6 +137,34 @@ tr.clickable:hover td{background:var(--surface2)}
   background:rgba(0,0,0,.15);border:none;border-radius:6px;
   padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
 }
+/* ── BOTÓN FLOTANTE VOLVER AL PANEL ── */
+#btn-back-panel{
+  position:fixed;bottom:80px;right:16px;z-index:88;
+  background:#6366f1;color:#fff;
+  border:none;border-radius:99px;
+  padding:10px 16px 10px 12px;
+  font-size:13px;font-weight:700;
+  display:flex;align-items:center;gap:6px;
+  box-shadow:0 4px 16px rgba(0,0,0,.3);
+  cursor:pointer;font-family:inherit;
+  transition:opacity .2s,transform .2s;white-space:nowrap;
+}
+#btn-back-panel:hover{opacity:.9;transform:translateY(-2px)}
+#btn-back-panel svg{width:16px;height:16px;flex-shrink:0}
+/* ── MONITOR INACTIVIDAD MÓDULO ── */
+#mod-inactive-warn{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:200;
+  background:#f59e0b;color:#000;
+  padding:10px 16px;font-size:13px;font-weight:600;
+  align-items:center;justify-content:space-between;gap:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+#mod-inactive-warn.show{display:flex}
+#mod-inactive-warn-btn{
+  background:rgba(0,0,0,.15);border:none;border-radius:6px;
+  padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
+}
+  
 </style>
 </head>
 <body>
@@ -717,7 +745,61 @@ function extendModSession() { resetModIdle(); }
   document.addEventListener(ev, resetModIdle, { passive: true });
 });
 resetModIdle();
+/* ── VOLVER AL PANEL + MONITOR DE INACTIVIDAD ── */
+function goBackPanel() {
+  var backend = localStorage.getItem('ld_backend') || '';
+  var store   = localStorage.getItem('ld_store')   || '';
+  var base    = window.location.href.split('?')[0].replace(/[^\/]+$/, '');
+  var url     = base + 'index.html';
+  if (backend) url += '?backend=' + encodeURIComponent(backend);
+  if (store)   url += (backend ? '&' : '?') + 'store=' + encodeURIComponent(store);
+  window.location.href = url;
+}
+
+var _modIdleWarn=null, _modIdleClose=null, _modCloseCount=null;
+
+function resetModIdle() {
+  clearTimeout(_modIdleWarn);
+  clearTimeout(_modIdleClose);
+  clearInterval(_modCloseCount);
+  var w = document.getElementById('mod-inactive-warn');
+  if (w) w.classList.remove('show');
+  _modIdleWarn = setTimeout(function() {
+    if (w) w.classList.add('show');
+    var secs = 60;
+    var el = document.getElementById('mod-inactive-secs');
+    if (el) el.textContent = secs;
+    _modCloseCount = setInterval(function() {
+      secs--;
+      if (el) el.textContent = secs;
+      if (secs <= 0) { clearInterval(_modCloseCount); goBackPanel(); }
+    }, 1000);
+    _modIdleClose = setTimeout(goBackPanel, 60000);
+  }, 10 * 60 * 1000);
+}
+
+function extendModSession() { resetModIdle(); }
+
+['click','touchstart','keypress','scroll','mousemove'].forEach(function(ev) {
+  document.addEventListener(ev, resetModIdle, { passive: true });
+});
+
+resetModIdle();
 
 </script>
+
+  <!-- Botón flotante volver al panel -->
+<button id="btn-back-panel" onclick="goBackPanel()" title="Volver al panel principal">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+    <path d="M19 12H5M12 5l-7 7 7 7"/>
+  </svg>
+  Panel
+</button>
+
+<!-- Monitor inactividad módulo -->
+<div id="mod-inactive-warn">
+  <span>⏱ Módulo inactivo — cierra en <strong id="mod-inactive-secs">60</strong>s</span>
+  <button id="mod-inactive-warn-btn" onclick="extendModSession()">Seguir aquí</button>
+</div>
 </body>
 </html>
