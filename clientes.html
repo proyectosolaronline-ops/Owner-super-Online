@@ -710,41 +710,6 @@ async function cambiarTipo(customerId, tipo) {
   document.getElementById('btn-aprobar-mayorista').style.display = 'none';
   renderLista();
 }
-</script>
-  <script src="lk-guardian.js">
-/* ── VOLVER AL PANEL + MONITOR DE INACTIVIDAD ── */
-function goBackPanel() {
-  var backend = localStorage.getItem('ld_backend') || '';
-  var store   = localStorage.getItem('ld_store')   || '';
-  var base    = window.location.href.split('?')[0].replace(/[^\/]+$/, '');
-  var url     = base + 'index.html';
-  if (backend) url += '?backend=' + encodeURIComponent(backend);
-  if (store)   url += (backend ? '&' : '?') + 'store=' + encodeURIComponent(store);
-  window.location.href = url;
-}
-var _modIdleWarn=null, _modIdleClose=null, _modCloseCount=null;
-function resetModIdle() {
-  clearTimeout(_modIdleWarn); clearTimeout(_modIdleClose); clearInterval(_modCloseCount);
-  var w = document.getElementById('mod-inactive-warn');
-  if (w) w.classList.remove('show');
-  _modIdleWarn = setTimeout(function() {
-    if (w) w.classList.add('show');
-    var secs = 60;
-    var el = document.getElementById('mod-inactive-secs');
-    if (el) el.textContent = secs;
-    _modCloseCount = setInterval(function() {
-      secs--;
-      if (el) el.textContent = secs;
-      if (secs <= 0) { clearInterval(_modCloseCount); goBackPanel(); }
-    }, 1000);
-    _modIdleClose = setTimeout(goBackPanel, 60000);
-  }, 10 * 60 * 1000);
-}
-function extendModSession() { resetModIdle(); }
-['click','touchstart','keypress','scroll','mousemove'].forEach(function(ev) {
-  document.addEventListener(ev, resetModIdle, { passive: true });
-});
-resetModIdle();
 /* ── VOLVER AL PANEL + MONITOR DE INACTIVIDAD ── */
 function goBackPanel() {
   var backend = localStorage.getItem('ld_backend') || '';
@@ -785,10 +750,13 @@ function extendModSession() { resetModIdle(); }
 });
 
 resetModIdle();
+  
+</script>
+  <script src="lk-guardian.js">
 
 </script>
 
-  <!-- Botón flotante volver al panel -->
+<!-- Botón flotante volver al panel -->
 <button id="btn-back-panel" onclick="goBackPanel()" title="Volver al panel principal">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
     <path d="M19 12H5M12 5l-7 7 7 7"/>
@@ -801,5 +769,7 @@ resetModIdle();
   <span>⏱ Módulo inactivo — cierra en <strong id="mod-inactive-secs">60</strong>s</span>
   <button id="mod-inactive-warn-btn" onclick="extendModSession()">Seguir aquí</button>
 </div>
+
+
 </body>
 </html>
