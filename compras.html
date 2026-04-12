@@ -1057,9 +1057,7 @@ function toast(msg, type) {
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) loadAll();
 });
-</script>
-<script src="lk-guardian.js">
-/* ── VOLVER AL PANEL + MONITOR DE INACTIVIDAD ── */
+  /* ── VOLVER AL PANEL + MONITOR DE INACTIVIDAD ── */
 function goBackPanel() {
   var backend = localStorage.getItem('ld_backend') || '';
   var store   = localStorage.getItem('ld_store')   || '';
@@ -1092,6 +1090,9 @@ function extendModSession() { resetModIdle(); }
   document.addEventListener(ev, resetModIdle, { passive: true });
 });
 resetModIdle();
+</script>
+<script src="lk-guardian.js">
+
 
 </script>
 <!-- Botón flotante volver al panel -->
