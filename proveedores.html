@@ -296,7 +296,7 @@ input,select,textarea{font-family:var(--font);outline:none}
 <script>
 /* ─── CONFIG ─── */
 const params      = new URLSearchParams(location.search);
-const BACKEND     = params.get('backend')     || localStorage.getItem('ld_backend')     || '';
+const BACKEND     = params.get('backend')     || localStorage.getItem('ld_backend')     || 'https://script.google.com/macros/s/AKfycbwUhTHQkBhLIvF9KgP2bHpVeufIEaPCXZWo9-azz7mYrEEA79BPFCQxE68YQQxE5iw/exec';
 const INV_BACKEND = params.get('inv_backend') || localStorage.getItem('ld_inv_backend') || '';
 const TOKEN       = localStorage.getItem('ld_token')  || '';
 const STORE_ID    = localStorage.getItem('ld_store')  || '';
