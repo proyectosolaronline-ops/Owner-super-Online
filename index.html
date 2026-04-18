@@ -432,22 +432,22 @@ let STORE_ID  = localStorage.getItem('ld_store')  || '';
 let USER_ROLE = localStorage.getItem('ld_role')   || '';
 let STORE_CFG  = {};
 let ALL_ORDERS = [];
+var _confirmResolve = null;
 let PLAN_INFO  = {
   maxProducts: 9999, maxOrders: 9999, maxCustomers: 9999, maxPromos: 0,
   allowOrders:         true,
   allowCustomers:      true,
   allowMayorista:      false,
-  catalogOnly:         false,
+  allowcatalogo:       false,   // ← CAMBIO 1: catalogOnly → allowcatalogo
   label:               '',
   // ── Visibilidad de módulos por licencia ──
-  allowCatalog:        true,   // cfg.planFeatures.allowCatalog
-  allowCompras:        true,   // cfg.planFeatures.allowCompras
-  allowInventario:     true,   // cfg.planFeatures.allowInventario
-  allowReportes:       true,   // cfg.planFeatures.allowReportes  (= Reportes en editor)
-  allowProveedores:    true,   // cfg.planFeatures.allowProveedores
+  allowcatalogo:       true,    // ← CAMBIO 2: allowCatalog → allowcatalogo
+  allowCompras:        true,
+  allowInventario:     true,
+  allowReportes:       true,
+  allowProveedores:    true,
 };
-var _confirmResolve = null;
-
+  
 /* ═══════════════════════════════════════════════════════
    SISTEMA DE LICENCIA
    
