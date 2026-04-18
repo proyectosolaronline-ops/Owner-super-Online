@@ -631,7 +631,7 @@ window.addEventListener('load', function() {
       PLAN_INFO = Object.assign({}, PLAN_INFO, savedPlan);
     }
     // Resetear solo módulos opcionales a false hasta que el backend confirme.
-    ['allowCatalog','allowCompras','allowInventario','allowReportes','allowProveedores'].forEach(function(k){
+    ['allowcatalogo','allowCompras','allowInventario','allowReportes','allowProveedores'].forEach(function(k){
       if (k in savedPlan) PLAN_INFO[k] = savedPlan[k];
       else PLAN_INFO[k] = false;
     });
