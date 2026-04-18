@@ -768,7 +768,7 @@ function applyRoleUI(role) {
 
   var allowOrders      = PLAN_INFO.allowOrders      !== false;
   var allowCustomers   = PLAN_INFO.allowCustomers   !== false;
-  var allowCatalog     = PLAN_INFO.allowCatalog     !== false;
+  var allowcatalogo    = PLAN_INFO.allowcatalogo    !== false;
   var allowCompras     = PLAN_INFO.allowCompras     !== false;
   var allowInventario  = PLAN_INFO.allowInventario  !== false;
   var allowReportes    = PLAN_INFO.allowReportes    !== false;
@@ -784,7 +784,7 @@ function applyRoleUI(role) {
 
   if (btnPedidos)     btnPedidos.style.display     = allowOrders      ? '' : 'none';
   if (btnClientes)    btnClientes.style.display    = allowCustomers   ? '' : 'none';
-  if (btnCatalogo)    btnCatalogo.style.display    = allowCatalog     ? '' : 'none';
+  if (btnCatalogo)    btnCatalogo.style.display    = allowcatalogo    ? '' : 'none';
   if (btnCompras)     btnCompras.style.display     = (allowOrders && allowCompras) ? '' : 'none';
   if (btnInventario)  btnInventario.style.display  = allowInventario  ? '' : 'none';
   if (btnReporte)     btnReporte.style.display     = (allowOrders && allowReportes) ? '' : 'none';
@@ -889,8 +889,8 @@ function renderStoreInfo(store) {
   STORE_CFG = (typeof rawCfg === 'string') ? JSON.parse(rawCfg) : rawCfg;
   // ── Merge planFeatures + flags raíz del config ──────────────
   // Los flags pueden venir dentro de planFeatures o directo en cfg
-  var moduleFlags = {
-    allowCatalog:     STORE_CFG.allowCatalog,
+    var moduleFlags = {
+    allowcatalogo:    STORE_CFG.allowcatalogo,
     allowCompras:     STORE_CFG.allowCompras,
     allowInventario:  STORE_CFG.allowInventario,
     allowReportes:    STORE_CFG.allowReportes,
