@@ -438,10 +438,9 @@ let PLAN_INFO  = {
   allowOrders:         true,
   allowCustomers:      true,
   allowMayorista:      false,
-  allowcatalogo:       false,   // ← CAMBIO 1: catalogOnly → allowcatalogo
+  allowcatalogo:       true,   // ← CAMBIO 1: catalogOnly → allowcatalogo
   label:               '',
   // ── Visibilidad de módulos por licencia ──
-  allowcatalogo:       true,    // ← CAMBIO 2: allowCatalog → allowcatalogo
   allowCompras:        true,
   allowInventario:     true,
   allowReportes:       true,
@@ -889,8 +888,12 @@ function renderStoreInfo(store) {
   STORE_CFG = (typeof rawCfg === 'string') ? JSON.parse(rawCfg) : rawCfg;
   // ── Merge planFeatures + flags raíz del config ──────────────
   // Los flags pueden venir dentro de planFeatures o directo en cfg
-    var moduleFlags = {
-    allowcatalogo:    STORE_CFG.allowcatalogo,
+   var moduleFlags = {
+    allowcatalogo:    STORE_CFG.allowcatalogo !== undefined 
+                        ? STORE_CFG.allowcatalogo 
+                        : (STORE_CFG.planFeatures && STORE_CFG.planFeatures.allowcatalogo !== undefined 
+                            ? STORE_CFG.planFeatures.allowcatalogo 
+                            : undefined),
     allowCompras:     STORE_CFG.allowCompras,
     allowInventario:  STORE_CFG.allowInventario,
     allowReportes:    STORE_CFG.allowReportes,
