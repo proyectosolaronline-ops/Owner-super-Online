@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Test Logo Banner</title>
+</head>
+<body>
+
+<input id="storeId" placeholder="ID Tienda" value="" style="width:300px;">
+<input id="token" placeholder="Token (opcional)" value="" style="width:300px;">
+<button onclick="mostrar()">Mostrar Logo y Banner</button>
+
+<hr>
+
+<div id="info"></div>
+
+<h4>LOGO:</h4>
+<div id="logoDebug"></div>
+<div id="logoImages"></div>
+
+<h4>BANNER:</h4>
+<div id="bannerDebug"></div>
+<div id="bannerImages"></div>
+
+<script>
+var BACKEND = 'https://script.google.com/macros/s/AKfycbwUhTHQkBhLIvF9KgP2bHpVeufIEaPCXZWo9-azz7mYrEEA79BPFCQxE68YQQxE5iw/exec';
+
+function extractDriveId(url) {
+  if (!url) return null;
+  
+  // Formato /d/XXXXX/
+  var m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) return m[1];
+  
+  // Formato ?id=XXXXX
+  m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m) return m[1];
+  
+  // Formato /file/d/XXXXX/
+  m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) return m[1];
+  
+  // Formato open?id=XXXXX
+  m = url.match(/\/open\?id=([a-zA-Z0-9_-]+)/);
+  if (m) return m[1];
+  
+  // Formato uc?id=XXXXX
+  m = url.match(/\/uc\?id=([a-zA-Z0-9_-]+)/);
+  if (m) return m[1];
+  
+  return null;
+}
+
+function probarFormatosDrive(fileId) {
+  return [
+    { name: 'lh3 (w500)', url: 'https://lh3.googleusercontent.com/d/' + fileId + '=w500' },
+    { name: 'lh3 (s200)', url: 'https://lh3.googleusercontent.com/d/' + fileId + '=s200' },
+    { name: 'thumbnail', url: 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w500' },
+    { name: 'uc export', url: 'https://drive.google.com/uc?export=view&id=' + fileId },
+    { name: 'uc download', url: 'https://drive.google.com/uc?export=download&id=' + fileId }
+  ];
+}
+
+function crearImg(url, label) {
+  return '<div style="display:inline-block;margin:10px;text-align:center;border:1px solid #ddd;padding:5px;">' +
+         '<div style="font-size:11px;margin-bottom:5px;">' + label + '</div>' +
+         '<img src="' + url + '" style="max-width:150px;max-height:150px;border:1px solid #ccc;" ' +
+         'onload="this.style.border=\'2px solid green\'" ' +
+         'onerror="this.style.border=\'2px solid red\';this.nextElementSibling.innerHTML=\'❌ Error\'">' +
+         '<div style="font-size:10px;margin-top:3px;">⏳</div>' +
+         '</div>';
+}
+
+async function mostrar() {
+  var storeId = document.getElementById('storeId').value;
+  var token = document.getElementById('token').value;
+  
+  document.getElementById('info').innerHTML = 'Cargando...';
+  
+  try {
+    var body = { action: 'store.info', storeId: storeId };
+    if (token) body.token = token;
+    
+    var resp = await fetch(BACKEND, {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+    
+    var data = await resp.json();
+    console.log('Respuesta completa:', data);
+    
+    if (!data.store) {
+      document.getElementById('info').innerHTML = '❌ Error: ' + JSON.stringify(data);
+      return;
+    }
+    
+    var store = data.store;
+    var cfg = store.config;
+    if (typeof cfg === 'string') cfg = JSON.parse(cfg);
+    
+    document.getElementById('info').innerHTML = 
+      '<b>Tienda:</b> ' + store.name + '<br>' +
+      '<b>Config recibida:</b><br>' +
+      '<pre style="background:#f0f0f0;padding:10px;overflow:auto;max-height:200px;">' + 
+      JSON.stringify(cfg, null, 2) + '</pre>';
+    
+    // ─────────────────────────────────────────────────
+    // LOGO
+    // ─────────────────────────────────────────────────
+    var logoUrl = cfg.logo || cfg.logoUrl || '';
+    var logoDebug = document.getElementById('logoDebug');
+    var logoImages = document.getElementById('logoImages');
+    
+    logoDebug.innerHTML = '<b>URL original:</b> <code>' + (logoUrl || '(vacío)') + '</code>';
+    
+    var logoId = extractDriveId(logoUrl);
+    if (logoId) {
+      logoDebug.innerHTML += '<br><b>ID de Drive:</b> <code>' + logoId + '</code>';
+      
+      var formatos = probarFormatosDrive(logoId);
+      var html = '';
+      formatos.forEach(function(f) {
+        html += crearImg(f.url, f.name);
+      });
+      logoImages.innerHTML = html;
+      
+    } else if (logoUrl) {
+      logoDebug.innerHTML += '<br><b>No es URL de Drive</b>';
+      logoImages.innerHTML = crearImg(logoUrl, 'URL original');
+    } else {
+      logoImages.innerHTML = '<i>Sin logo configurado</i>';
+    }
+    
+    // ─────────────────────────────────────────────────
+    // BANNER
+    // ─────────────────────────────────────────────────
+    var bannerUrl = cfg.bannerUrl || cfg.banner || '';
+    var bannerDebug = document.getElementById('bannerDebug');
+    var bannerImages = document.getElementById('bannerImages');
+    
+    bannerDebug.innerHTML = '<b>URL original:</b> <code>' + (bannerUrl || '(vacío)') + '</code>';
+    
+    var bannerId = extractDriveId(bannerUrl);
+    if (bannerId) {
+      bannerDebug.innerHTML += '<br><b>ID de Drive:</b> <code>' + bannerId + '</code>';
+      
+      var formatos = probarFormatosDrive(bannerId);
+      var html = '';
+      formatos.forEach(function(f) {
+        html += crearImg(f.url, f.name);
+      });
+      bannerImages.innerHTML = html;
+      
+    } else if (bannerUrl) {
+      bannerDebug.innerHTML += '<br><b>No es URL de Drive</b>';
+      bannerImages.innerHTML = crearImg(bannerUrl, 'URL original');
+    } else {
+      bannerImages.innerHTML = '<i>Sin banner configurado</i>';
+    }
+    
+  } catch (e) {
+    document.getElementById('info').innerHTML = '❌ Error: ' + e.message;
+    console.error(e);
+  }
+}
+</script>
+
+</body>
+</html>
