@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Logo y Banner</title>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <h3>Login Dueño</h3>
+  <div id="step1">
+    <input type="email" id="email" placeholder="Email">
+    <button onclick="solicitarCodigo()">Enviar código</button>
+    <div id="error1"></div>
+  </div>
+  <div id="step2" style="display:none">
+    <input id="codigo" placeholder="Código" maxlength="8">
+    <button onclick="verificarCodigo()">Ingresar</button>
+    <div id="error2"></div>
+  </div>
+</div>
+
+<!-- RESULTADO -->
+<div id="resultado" style="display:none">
+  <h3 id="nombreTienda"></h3>
+  
+  <h4>LOGO:</h4>
+  <div>URL: <span id="logoUrl"></span></div>
+  <div>Estado: <span id="logoEstado"></span></div>
+  <img id="logoImg" style="max-width:200px;max-height:200px;">
+  
+  <h4>BANNER:</h4>
+  <div>URL: <span id="bannerUrl"></span></div>
+  <div>Estado: <span id="bannerEstado"></span></div>
+  <img id="bannerImg" style="max-width:400px;max-height:200px;">
+  
+  <br><br>
+  <button onclick="location.reload()">Salir</button>
+</div>
+
+<script>
+// CONFIGURACIÓN
+var BACKEND = 'https://script.google.com/macros/s/AKfycbwUhTHQkBhLIvF9KgP2bHpVeufIEaPCXZWo9-azz7mYrEEA79BPFCQxE68YQQxE5iw/exec';
+var TOKEN = '';
+var STORE_ID = '';
+var emailOwner = '';
+
+// FUNCIÓN PARA ARREGLAR URL DE GOOGLE DRIVE
+function arreglarUrlDrive(url) {
+  if (!url) return '';
+  
+  // Si ya es directa
+  if (url.includes('lh3.googleusercontent.com/d/')) return url;
+  
+  // Buscar ID de Drive
+  var id = null;
+  var m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) id = m[1];
+  if (!id) {
+    m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m) id = m[1];
+  }
+  
+  if (id) return 'https://lh3.googleusercontent.com/d/' + id + '=w500';
+  
+  return url;
+}
+
+// SOLICITAR CÓDIGO
+async function solicitarCodigo() {
+  var email = document.getElementById('email').value;
+  emailOwner = email;
+  
+  var resp = await fetch(BACKEND, {
+    method: 'POST',
+    body: JSON.stringify({action: 'owner.request.code', email: email})
+  });
+  var data = await resp.json();
+  
+  if (data.ok) {
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'block';
+  } else {
+    document.getElementById('error1').innerText = data.error || 'Error';
+  }
+}
+
+// VERIFICAR CÓDIGO
+async function verificarCodigo() {
+  var codigo = document.getElementById('codigo').value.toUpperCase();
+  
+  var resp = await fetch(BACKEND, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'owner.verify.code',
+      email: emailOwner,
+      code: codigo
+    })
+  });
+  var data = await resp.json();
+  
+  if (data.ok && data.token) {
+    TOKEN = data.token;
+    STORE_ID = data.storeId;
+    
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('resultado').style.display = 'block';
+    
+    cargarInfo();
+  } else {
+    document.getElementById('error2').innerText = data.error || 'Código incorrecto';
+  }
+}
+
+// CARGAR INFORMACIÓN DE LA TIENDA
+async function cargarInfo() {
+  var resp = await fetch(BACKEND, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'store.info',
+      storeId: STORE_ID,
+      token: TOKEN
+    })
+  });
+  var data = await resp.json();
+  var store = data.store;
+  var cfg = store.config;
+  if (typeof cfg === 'string') cfg = JSON.parse(cfg);
+  
+  // Mostrar nombre
+  document.getElementById('nombreTienda').innerText = store.name || 'Mi Tienda';
+  
+  // MOSTRAR LOGO
+  var logoUrl = cfg.logo || cfg.logoUrl || '';
+  document.getElementById('logoUrl').innerText = logoUrl || 'No configurado';
+  
+  if (logoUrl) {
+    var urlLogo = arreglarUrlDrive(logoUrl);
+    var imgLogo = document.getElementById('logoImg');
+    imgLogo.src = urlLogo;
+    imgLogo.onload = function() {
+      document.getElementById('logoEstado').innerText = '✓ Cargado';
+      document.getElementById('logoEstado').style.color = 'green';
+    };
+    imgLogo.onerror = function() {
+      document.getElementById('logoEstado').innerText = '✗ Error al cargar';
+      document.getElementById('logoEstado').style.color = 'red';
+    };
+  } else {
+    document.getElementById('logoEstado').innerText = 'Sin logo';
+  }
+  
+  // MOSTRAR BANNER
+  var bannerUrl = cfg.bannerUrl || cfg.banner || '';
+  document.getElementById('bannerUrl').innerText = bannerUrl || 'No configurado';
+  
+  if (bannerUrl) {
+    var urlBanner = arreglarUrlDrive(bannerUrl);
+    var imgBanner = document.getElementById('bannerImg');
+    imgBanner.src = urlBanner;
+    imgBanner.onload = function() {
+      document.getElementById('bannerEstado').innerText = '✓ Cargado';
+      document.getElementById('bannerEstado').style.color = 'green';
+    };
+    imgBanner.onerror = function() {
+      document.getElementById('bannerEstado').innerText = '✗ Error al cargar';
+      document.getElementById('bannerEstado').style.color = 'red';
+    };
+  } else {
+    document.getElementById('bannerEstado').innerText = 'Sin banner';
+  }
+}
+</script>
+
+</body>
+</html>
