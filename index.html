@@ -412,21 +412,9 @@ let STORE_CFG  = {};
 let ALL_ORDERS = [];
 var _confirmResolve = null;
 
-let PLAN_INFO = {
-  maxProducts:     9999,
-  maxOrders:       9999,
-  maxCustomers:    9999,
-  maxPromos:       0,
-  allowOrders:     true,
-  allowCustomers:  true,
-  allowMayorista:  false,
-  allowcatalogo:   false,
-  label:           '',
-  allowCompras:    true,
-  allowInventario: true,
-  allowReportes:   true,
-  allowProveedores:true,
-};
+// NUEVO — siempre vacío al inicio, se llena desde servidor
+let PLAN_INFO = JSON.parse(localStorage.getItem('ld_plan_info') || 'null') || null;
+let _planPollInterval = null;
 
 var LICENSE_INFO = JSON.parse(localStorage.getItem('ld_license') || 'null');
 
@@ -924,6 +912,64 @@ function toast(msg,type) {
   el.textContent=msg; el.className=type; el.style.display='block';
   clearTimeout(el._t); el._t=setTimeout(function(){ el.style.display='none'; },3500);
 }
+async function fetchPlanInfo(forceBroadcast) {
+  try {
+    var data = await postAPI({
+      action:  'admin.config_planes.get',
+      storeId: STORE_ID,
+      token:   TOKEN
+    });
+
+    // si el admin endpoint no está disponible para el rol, caer a store.info
+    if (!data || !data.ok || !data.planes || !data.planes.length) {
+      data = await postAPI({ action: 'store.info', storeId: STORE_ID });
+      if (data && data.store && data.store.config && data.store.config.planFeatures) {
+        var pf = data.store.config.planFeatures;
+        var changed = JSON.stringify(pf) !== JSON.stringify(PLAN_INFO);
+        PLAN_INFO = pf;
+        localStorage.setItem('ld_plan_info', JSON.stringify(PLAN_INFO));
+        if (changed || forceBroadcast) { applyRoleUI(USER_ROLE); applyCatalogOnly(); }
+      }
+      return;
+    }
+
+    // encontrar el plan de esta tienda en la lista
+    var storePlan = (STORE_CFG && STORE_CFG.plan) || localStorage.getItem('ld_store_plan') || 'light';
+    var planRow   = data.planes.find(function(p) { return p.plan === storePlan; });
+    if (!planRow) planRow = data.planes.find(function(p) { return p.plan === 'light'; });
+    if (!planRow) return;
+
+    var changed = JSON.stringify(planRow) !== JSON.stringify(PLAN_INFO);
+    PLAN_INFO = planRow;
+    localStorage.setItem('ld_plan_info', JSON.stringify(PLAN_INFO));
+
+    if (changed || forceBroadcast) {
+      applyRoleUI(USER_ROLE);
+      applyCatalogOnly();
+    }
+  } catch(e) {
+    // si falla el servidor usar localStorage sin tocar nada
+    var saved = JSON.parse(localStorage.getItem('ld_plan_info') || 'null');
+    if (saved && !PLAN_INFO) {
+      PLAN_INFO = saved;
+      applyRoleUI(USER_ROLE);
+      applyCatalogOnly();
+    }
+  }
+}
+
+function startPlanPoll() {
+  if (_planPollInterval) clearInterval(_planPollInterval);
+  _planPollInterval = setInterval(function() {
+    if (TOKEN && STORE_ID) fetchPlanInfo(false);
+  }, 10000);
+}
+
+function stopPlanPoll() {
+  if (_planPollInterval) clearInterval(_planPollInterval);
+  _planPollInterval = null;
+}
+  
 </script>
 
 </body>
