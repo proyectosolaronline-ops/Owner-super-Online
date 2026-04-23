@@ -662,15 +662,20 @@ async function doStaffLogin() {
   finally { btn.disabled=false; btn.textContent='Ingresar'; }
 }
 
-function saveSession(token,storeId,role,name,email) {
-  TOKEN=token; STORE_ID=storeId; USER_ROLE=role;
-  localStorage.setItem('ld_token',token);
-  localStorage.setItem('ld_store',storeId);
-  localStorage.setItem('ld_role',role);
-  localStorage.setItem('ld_backend',BACKEND);
-  if (INV_BACKEND) localStorage.setItem('ld_inv_backend',INV_BACKEND);
-  document.getElementById('topbar-name').textContent=name||'Mi Tienda';
-  document.getElementById('topbar-logo-letter').textContent=(name||'T')[0].toUpperCase();
+function saveSession(token, storeId, role, name, email) {
+  TOKEN = token; STORE_ID = storeId; USER_ROLE = role;
+  localStorage.setItem('ld_token', token);
+  localStorage.setItem('ld_store', storeId);
+  localStorage.setItem('ld_role', role);
+  localStorage.setItem('ld_backend', BACKEND);
+  if (INV_BACKEND) localStorage.setItem('ld_inv_backend', INV_BACKEND);
+  // ✅ FIX A: limpiar plan info para no heredar flags incorrectos de sesión anterior
+  localStorage.removeItem('ld_plan_info');
+  PLAN_INFO = { maxProducts:9999, maxOrders:9999, maxCustomers:9999, maxPromos:0,
+    allowOrders:true, allowCustomers:true, allowMayorista:false, allowcatalogo:false,
+    label:'', allowCompras:true, allowInventario:true, allowReportes:true, allowProveedores:true };
+  document.getElementById('topbar-name').textContent = name || 'Mi Tienda';
+  document.getElementById('topbar-logo-letter').textContent = (name || 'T')[0].toUpperCase();
 }
 
 function showLErr(type,msg) {
@@ -687,8 +692,12 @@ function applyRoleUI(role) {
   document.querySelectorAll('.owner-only').forEach(function(el){ el.style.display=role==='owner'?'':'none'; });
 
   var catalogOnly      = isCatalogOnly();
-  var allowOrders      = catalogOnly ? false : PLAN_INFO.allowOrders      !== false;
-  var allowCustomers   = catalogOnly ? false : PLAN_INFO.allowCustomers   !== false;
+// ✅ FIX B: default explícito a true si el campo no existe
+var allowOrders    = catalogOnly ? false : (PLAN_INFO.allowOrders    !== false);
+var allowCustomers = catalogOnly ? false : (PLAN_INFO.allowCustomers !== false);
+// Forzar true si allowcatalogo no está activo y el campo nunca llegó del servidor
+if (!catalogOnly && PLAN_INFO.allowOrders    === undefined) allowOrders    = true;
+if (!catalogOnly && PLAN_INFO.allowCustomers === undefined) allowCustomers = true;
   var allowCompras     = catalogOnly ? false : PLAN_INFO.allowCompras     !== false;
   var allowInventario  = PLAN_INFO.allowInventario  !== false;
   var allowReportes    = catalogOnly ? false : PLAN_INFO.allowReportes    !== false;
@@ -824,12 +833,16 @@ function renderDashboard(s, planFeatures) {
   document.getElementById('d-revenue').textContent  =fmt(s.totalRevenue);
   document.getElementById('d-products').textContent =s.totalProducts||0;
   document.getElementById('d-customers').textContent=s.totalCustomers||0;
-  if (planFeatures) {
-    PLAN_INFO=Object.assign({},PLAN_INFO,planFeatures);
-    localStorage.setItem('ld_plan_info',JSON.stringify(PLAN_INFO));
-    applyRoleUI(USER_ROLE);
-    applyCatalogOnly();
-  }
+  if (planFeatures && Object.keys(planFeatures).length > 0) {
+  // ✅ FIX C: solo actualizar si allowOrders viene explícitamente en la respuesta
+  var safeFeatures = Object.assign({}, planFeatures);
+  if (safeFeatures.allowOrders    === undefined) delete safeFeatures.allowOrders;
+  if (safeFeatures.allowCustomers === undefined) delete safeFeatures.allowCustomers;
+  PLAN_INFO = Object.assign({}, PLAN_INFO, safeFeatures);
+  localStorage.setItem('ld_plan_info', JSON.stringify(PLAN_INFO));
+  applyRoleUI(USER_ROLE);
+  applyCatalogOnly();
+}
   var pending=(s.byStatus||{}).pending||0;
   var badge=document.getElementById('pending-badge');
   if (pending>0) { badge.textContent=pending; badge.style.display=''; }
