@@ -357,39 +357,80 @@ var LICENSE_INFO = JSON.parse(localStorage.getItem('ld_license') || 'null');
 async function fetchPlanInfo(forceBroadcast) {
   if (!TOKEN || !STORE_ID) return;
   try {
-    /* 1. Intentar leer config_planes completo */
-    var data = await postAPI({ action: 'admin.config_planes.get', storeId: STORE_ID, token: TOKEN });
+
+    // ── PASO 1: config_planes es SIEMPRE la fuente principal ──
+    var data = await postAPI({
+      action:  'admin.config_planes.get',
+      storeId: STORE_ID,
+      token:   TOKEN
+    });
 
     if (data && data.ok && data.planes && data.planes.length) {
-      /* Buscar la fila del plan de esta tienda */
       var storePlan = localStorage.getItem('ld_store_plan') || 'light';
-      var planRow = data.planes.find(function(p){ return p.plan === storePlan; });
-      if (!planRow) planRow = data.planes.find(function(p){ return p.plan === 'light'; });
+      var planRow   = data.planes.find(function(p) { return p.plan === storePlan; });
+      if (!planRow)  planRow = data.planes.find(function(p) { return p.plan === 'light'; });
       if (planRow) {
         var changed = JSON.stringify(planRow) !== JSON.stringify(PLAN_INFO);
-        PLAN_INFO = planRow;
+        PLAN_INFO   = planRow;
+        // localStorage = solo caché, nunca fuente primaria
         localStorage.setItem('ld_plan_info', JSON.stringify(PLAN_INFO));
-        if (changed || forceBroadcast) { applyRoleUI(USER_ROLE); applyCatalogOnly(); }
-        return;
+        if (changed || forceBroadcast) {
+          applyRoleUI(USER_ROLE);
+          applyCatalogOnly();
+        }
+        return; // ✅ config_planes respondió — no necesitamos más
       }
     }
 
-    /* 2. Fallback: store.info → planFeatures */
+    // ── PASO 2: fallback store.info planFeatures ──
     var info = await postAPI({ action: 'store.info', storeId: STORE_ID });
     if (info && info.store && info.store.config && info.store.config.planFeatures) {
-      var pf = info.store.config.planFeatures;
+      var pf      = info.store.config.planFeatures;
       var changed2 = JSON.stringify(pf) !== JSON.stringify(PLAN_INFO);
-      PLAN_INFO = pf;
+      PLAN_INFO   = pf;
       localStorage.setItem('ld_plan_info', JSON.stringify(PLAN_INFO));
-      if (changed2 || forceBroadcast) { applyRoleUI(USER_ROLE); applyCatalogOnly(); }
+      if (changed2 || forceBroadcast) {
+        applyRoleUI(USER_ROLE);
+        applyCatalogOnly();
+      }
+      return; // ✅ store.info respondió
     }
+
+    // ── PASO 3: último recurso — localStorage caché ──
+    var cached = localStorage.getItem('ld_plan_info');
+    if (cached) {
+      try {
+        var cachedPlan = JSON.parse(cached);
+        if (cachedPlan && Object.keys(cachedPlan).length) {
+          PLAN_INFO = cachedPlan;
+          if (forceBroadcast) {
+            applyRoleUI(USER_ROLE);
+            applyCatalogOnly();
+          }
+        }
+      } catch(eCache) {
+        console.warn('[fetchPlanInfo] caché corrupta:', eCache.message);
+      }
+    }
+
   } catch(e) {
-    /* Servidor caído — usar caché sin tocar nada */
-    console.warn('[fetchPlanInfo] usando caché localStorage:', e.message);
-    if (forceBroadcast && PLAN_INFO) { applyRoleUI(USER_ROLE); applyCatalogOnly(); }
+    // Servidor caído — usar caché sin modificar nada
+    console.warn('[fetchPlanInfo] error de red, usando caché:', e.message);
+    var cached2 = localStorage.getItem('ld_plan_info');
+    if (cached2) {
+      try {
+        var cp = JSON.parse(cached2);
+        if (cp && Object.keys(cp).length) {
+          PLAN_INFO = cp;
+          if (forceBroadcast) {
+            applyRoleUI(USER_ROLE);
+            applyCatalogOnly();
+          }
+        }
+      } catch(e2) {}
+    }
   }
 }
-
 function startPlanPoll() {
   stopPlanPoll();
   _planPollInterval = setInterval(function(){
