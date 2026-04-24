@@ -407,6 +407,8 @@ function stopPlanPoll() {
 ═══════════════════════════════════════════════════ */
 function isCatalogOnly() {
   if (!PLAN_INFO) return false;
+  // FIX: si allowOrders es true, nunca es solo catálogo
+  if (PLAN_INFO.allowOrders === true) return false;
   return PLAN_INFO.allowcatalogo === true;
 }
 
@@ -446,14 +448,14 @@ function applyCatalogOnly() {
     el = document.getElementById('catalog-only-hint');  if(el) el.style.display = '';
   } else {
     /* Restaurar visibilidad según flags del plan */
-    if (btnPedidos)  btnPedidos.style.display  = PLAN_INFO.allowOrders    === true ? '' : 'none';
+    if (btnPedidos)  btnPedidos.style.display  = '';
     if (btnClientes) btnClientes.style.display = PLAN_INFO.allowCustomers === true ? '' : 'none';
     if (btnCompras)  btnCompras.style.display  = PLAN_INFO.allowCompras   === false ? 'none' : '';
     if (btnReporte)  btnReporte.style.display  = PLAN_INFO.allowReportes  === false ? 'none' : '';
     var el2;
-    el2 = document.getElementById('stat-orders-card');   if(el2) el2.style.display = PLAN_INFO.allowOrders    === true ? '' : 'none';
-    el2 = document.getElementById('stat-revenue-card');  if(el2) el2.style.display = PLAN_INFO.allowOrders    === true ? '' : 'none';
-    el2 = document.getElementById('stat-customers-card');if(el2) el2.style.display = PLAN_INFO.allowCustomers === true ? '' : 'none';
+   el2 = document.getElementById('stat-orders-card');   if(el2) el2.style.display = '';
+el2 = document.getElementById('stat-revenue-card');  if(el2) el2.style.display = '';
+el2 = document.getElementById('stat-customers-card');if(el2) el2.style.display = PLAN_INFO.allowCustomers === true ? '' : 'none';
     el2 = document.getElementById('recent-orders-section'); if(el2) el2.style.display = '';
     el2 = document.getElementById('catalog-only-hint');  if(el2) el2.style.display = 'none';
   }
