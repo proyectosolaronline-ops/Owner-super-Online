@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Control de Pagos — LandingKit</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#f4f4f0;--surface:#fff;--surface2:#f9f9f6;--border:#e8e8e2;
+  --accent:#1a1a1a;--accent2:#6366f1;--text:#1a1a1a;--muted:#888;
+  --danger:#ef4444;--warn:#f59e0b;--success:#16a34a;
+  --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;}
+
+.no-session{position:fixed;inset:0;background:var(--accent);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:24px;text-align:center}
+.no-session.show{display:flex}
+.no-session-ico{font-size:40px}
+.no-session-title{font-family:var(--font-d);font-size:18px;font-weight:800;color:#fff}
+.no-session-sub{font-size:13px;color:#aaa;line-height:1.5}
+.no-session-btn{padding:12px 24px;background:var(--accent2);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-b)}
+
+.app{display:none;flex-direction:column;min-height:100vh;}
+.app.visible{display:flex}
+
+.topbar{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-name{font-family:var(--font-d);font-size:14px;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:6px}
+
+.content{padding:16px;flex:1;max-width:860px;margin:0 auto;width:100%}
+
+.btn{padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-b);display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.btn.success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn.dark{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.sm{padding:7px 12px;font-size:12px;border-radius:8px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.full{width:100%;justify-content:center}
+.btn:disabled{opacity:.4;pointer-events:none}
+
+/* Tarjetas resumen */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 12px}
+.stat-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.stat-val{font-family:var(--font-d);font-size:20px;font-weight:800}
+.stat-val.green{color:var(--success)}
+.stat-val.amber{color:var(--warn)}
+.stat-val.purple{color:var(--accent2)}
+
+/* Barra de búsqueda */
+.search-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-b);background:var(--surface);color:var(--text);margin-bottom:12px}
+.search-input:focus{outline:none;border-color:var(--accent2)}
+
+/* Tabla */
+.tbl-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1.5px solid var(--border);background:var(--surface2)}
+td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:600}
+.badge.pendiente{background:#fef9c3;color:#854d0e}
+.badge.parcial{background:#dbeafe;color:#1e40af}
+.badge.pagado{background:#dcfce7;color:#166534}
+.badge.credito{background:#f3e8ff;color:#7e22ce}
+.badge.contado{background:#f0fdf4;color:#166534}
+
+/* Progress bar saldo */
+.progress-wrap{width:100%;height:5px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:4px}
+.progress-bar{height:100%;border-radius:99px;background:var(--accent2);transition:width .3s}
+.progress-bar.full{background:var(--success)}
+
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
+.modal-hdr{padding:16px 20px 14px;border-bottom:1.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-family:var(--font-d);font-size:15px;font-weight:700}
+.modal-body{padding:20px}
+.modal-foot{padding:14px 20px;border-top:1.5px solid var(--border);display:flex;gap:8px}
+.modal-foot .btn{flex:1;justify-content:center}
+
+/* Detalle */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.detail-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.detail-val{font-weight:600;font-size:13px;word-break:break-word}
+
+/* Saldo destacado */
+.saldo-banner{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.saldo-info{display:flex;flex-direction:column;gap:2px}
+.saldo-txt{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.saldo-num{font-family:var(--font-d);font-size:24px;font-weight:800;color:var(--warn)}
+.saldo-num.zero{color:var(--success)}
+
+/* Historial abonos */
+.abonos-list{background:var(--surface2);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.abono-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px}
+.abono-row:last-child{border-bottom:none}
+.abono-left{display:flex;flex-direction:column;gap:2px}
+.abono-tipo{font-size:11px;color:var(--muted)}
+.abono-amt{font-weight:700;font-family:var(--font-d);font-size:15px;color:var(--success)}
+
+/* Form abono */
+.form-section{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
+.form-input{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font-b);background:var(--surface);color:var(--text)}
+.form-input:focus{outline:none;border-color:var(--accent2)}
+.tipo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.tipo-btn{padding:10px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;font-family:var(--font-b)}
+.tipo-btn.sel{border-color:var(--accent2);background:#ede9fe;color:var(--accent2)}
+
+/* Upload comprobante */
+.upload-zone{border:1.5px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .15s;margin-top:8px}
+.upload-zone:hover{border-color:var(--accent2)}
+.upload-zone.has-file{border-color:var(--success);background:#f0fdf4}
+.upload-thumb{max-width:100%;max-height:140px;border-radius:8px;margin-top:8px;object-fit:contain}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);border-radius:10px;padding:11px 18px;font-size:13px;font-weight:600;z-index:9999;display:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+#toast.success{background:var(--success);color:#fff}
+#toast.error{background:var(--danger);color:#fff}
+#toast.warn{background:var(--warn);color:#fff}
+
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-ico{font-size:36px;margin-bottom:10px}
+.empty h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+
+@keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+@media(min-width:768px){
+  .overlay{align-items:center}
+  .modal{border-radius:14px;max-width:520px;width:100%}
+}
+
+/* Botón flotante volver */
+#btn-back-panel{
+  position:fixed;bottom:80px;right:16px;z-index:88;
+  background:#6366f1;color:#fff;
+  border:none;border-radius:99px;
+  padding:10px 16px 10px 12px;
+  font-size:13px;font-weight:700;
+  display:flex;align-items:center;gap:6px;
+  box-shadow:0 4px 16px rgba(0,0,0,.3);
+  cursor:pointer;font-family:inherit;
+  transition:opacity .2s,transform .2s;white-space:nowrap;
+}
+#btn-back-panel:hover{opacity:.9;transform:translateY(-2px)}
+#btn-back-panel svg{width:16px;height:16px;flex-shrink:0}
+
+/* Monitor inactividad */
+#mod-inactive-warn{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:200;
+  background:#f59e0b;color:#000;
+  padding:10px 16px;font-size:13px;font-weight:600;
+  align-items:center;justify-content:space-between;gap:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+#mod-inactive-warn.show{display:flex}
+#mod-inactive-warn-btn{
+  background:rgba(0,0,0,.15);border:none;border-radius:6px;
+  padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
+}
+</style>
+</head>
+<body>
+
+<div class="no-session" id="no-session">
+  <div class="no-session-ico">🔒</div>
+  <div class="no-session-title">Sesión no encontrada</div>
+  <div class="no-session-sub">Accede primero desde el panel principal de LandingKit.</div>
+  <button class="no-session-btn" onclick="history.back()">← Volver al panel</button>
+</div>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-name" id="topbar-name">Control de Pagos</div>
+    </div>
+    <div class="topbar-right">
+      <span id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;animation:livepulse 2s ease-in-out infinite"></span>
+      <span id="live-label" style="font-size:11px;color:var(--muted)">En vivo</span>
+      <button class="btn sm ghost" onclick="loadPedidos()" title="Actualizar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      </button>
+      <button class="btn ghost sm" style="padding:4px 10px;color:var(--muted)" onclick="history.back()">← Panel</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Tarjetas resumen -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Pendientes</div>
+        <div class="stat-val amber" id="stat-pendientes">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Saldo total</div>
+        <div class="stat-val purple" id="stat-saldo">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cobrado hoy</div>
+        <div class="stat-val green" id="stat-hoy">—</div>
+      </div>
+    </div>
+
+    <input class="search-input" id="search-input" placeholder="🔍 Buscar por cliente, ID o referencia..." oninput="renderPedidos()">
+
+    <div class="tbl-wrap" id="pedidos-wrap">
+      <div class="empty"><div class="spinner"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal cobro -->
+<div class="overlay" id="modal-cobro">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-title">Registrar Pago</div>
+      <button class="btn ghost sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- Se llena dinámicamente -->
+    </div>
+    <div class="modal-foot">
+      <button class="btn full" onclick="closeModal()">Cancelar</button>
+      <button class="btn success full" id="btn-registrar" onclick="confirmarAbono()">
+        ✓ Registrar abono
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+const BACKEND_PAGOS = (new URLSearchParams(location.search).get('backend_pagos'))
+  || localStorage.getItem('ld_backend_pagos')
+  || 'https://script.google.com/macros/s/AKfycbwe35LZGuhRyrVnRzOKAZf4TAmoB4Awp9CyGlSnaKhtGaiAUM8w6_94KJgxIGd0xcov/exec'; // ← reemplazar al desplegar
+
+const BACKEND = (new URLSearchParams(location.search).get('backend'))
+  || localStorage.getItem('ld_backend') || '';
+const TOKEN    = localStorage.getItem('ld_token')  || '';
+const STORE_ID = localStorage.getItem('ld_store')  || '';
+
+let ALL_PEDIDOS   = [];
+let CURRENT_PEDIDO = null;
+let CURRENT_PAGOS  = [];
+let POLL_TIMER     = null;
+const POLL_INTERVAL = 30000;
+
+// ── INIT ────────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  if (!TOKEN || !STORE_ID) {
+    document.getElementById('no-session').classList.add('show');
+    return;
+  }
+  document.getElementById('app').classList.add('visible');
+  loadPedidos().then(iniciarPolling);
+  resetModIdle();
+});
+
+// ── API HELPERS ─────────────────────────────────────────────
+async function apiPagos(action, data) {
+  data = data || {};
+  try {
+    var payload = Object.assign({ action, storeId: STORE_ID, token: TOKEN }, data);
+    var res = await fetch(BACKEND_PAGOS, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    var json = await res.json();
+    if (json.error) throw new Error(json.error);
+    return json;
+  } catch(e) {
+    toast(e.message, 'error');
+    return null;
+  }
+}
+
+// ── CARGA PEDIDOS PENDIENTES ─────────────────────────────────
+async function loadPedidos(silent) {
+  if (!silent) document.getElementById('pedidos-wrap').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
+  setLive(true);
+  const res = await apiPagos('pagos.pedidos.pendientes');
+  setLive(false);
+  if (!res) return;
+  ALL_PEDIDOS = res.pedidos || [];
+  updateStats();
+  renderPedidos();
+}
+
+function setLive(loading) {
+  var dot = document.getElementById('live-dot');
+  var lbl = document.getElementById('live-label');
+  if (!dot) return;
+  dot.style.background = loading ? '#f59e0b' : '#16a34a';
+  lbl.textContent = loading ? 'Actualizando...' : 'En vivo';
+}
+
+function iniciarPolling() {
+  POLL_TIMER = setInterval(function() { loadPedidos(true); }, POLL_INTERVAL);
+}
+
+// ── STATS ────────────────────────────────────────────────────
+function updateStats() {
+  var totalSaldo = ALL_PEDIDOS.reduce(function(s, p) { return s + (p.saldo || 0); }, 0);
+  document.getElementById('stat-pendientes').textContent = ALL_PEDIDOS.length;
+  document.getElementById('stat-saldo').textContent = fmt(totalSaldo);
+
+  // Cobrado hoy: buscar en localStorage si hay cache, sino mostrar —
+  // En producción esto vendría de una query de pagos del día
+  document.getElementById('stat-hoy').textContent = '—';
+}
+
+// ── RENDER TABLA ─────────────────────────────────────────────
+function renderPedidos() {
+  var q    = (document.getElementById('search-input').value || '').toLowerCase();
+  var list = ALL_PEDIDOS;
+  if (q) list = list.filter(function(p) {
+    return (p.orderId       || '').toLowerCase().includes(q) ||
+           (p.customerName  || '').toLowerCase().includes(q) ||
+           (p.customerPhone || '').toLowerCase().includes(q);
+  });
+
+  var wrap = document.getElementById('pedidos-wrap');
+  if (!list.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-ico">💳</div><h3>Sin pedidos pendientes</h3><p style="font-size:13px;margin-top:4px">Todos los pedidos están al corriente</p></div>';
+    return;
+  }
+
+  wrap.innerHTML = '<table><thead><tr>' +
+    '<th>Cliente</th><th>Pedido</th><th>Saldo</th><th>Tipo</th><th></th>' +
+    '</tr></thead><tbody>' +
+    list.map(function(p) {
+      var pct   = p.total > 0 ? Math.min(100, (p.montoAcumulado / p.total) * 100) : 0;
+      var full  = pct >= 100;
+      var tipo  = p.tipoPago || '—';
+      var badgeTipo = p.tipoPago === 'Crédito'
+        ? '<span class="badge credito">Crédito</span>'
+        : p.tipoPago === 'Contado'
+          ? '<span class="badge contado">Contado</span>'
+          : '<span style="color:var(--muted);font-size:12px">—</span>';
+
+      return '<tr style="cursor:pointer" data-id="' + esc(p.orderId) + '" onclick="openDetalle(this.dataset.id)">' +
+        '<td>' +
+          '<div style="font-weight:600">' + esc(p.customerName || '—') + '</div>' +
+          '<div style="font-size:11px;color:var(--muted)">' + esc(p.customerPhone || '') + '</div>' +
+        '</td>' +
+        '<td>' +
+          '<div style="font-family:var(--mono);font-size:11px;color:var(--accent2)">' + esc(p.orderId) + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + fmt(p.montoAcumulado) + ' / ' + fmt(p.total) + '</div>' +
+          '<div class="progress-wrap"><div class="progress-bar' + (full?' full':'') + '" style="width:' + pct.toFixed(0) + '%"></div></div>' +
+        '</td>' +
+        '<td style="font-weight:800;font-family:var(--font-d);color:var(--warn)">' + fmt(p.saldo) + '</td>' +
+        '<td>' + badgeTipo + '</td>' +
+        '<td><button class="btn primary sm" onclick="event.stopPropagation();openDetalle(\'' + esc(p.orderId) + '\')">Cobrar</button></td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table>';
+}
+
+// ── ABRIR DETALLE / MODAL COBRO ──────────────────────────────
+async function openDetalle(orderId) {
+  CURRENT_PEDIDO = ALL_PEDIDOS.find(function(p) { return p.orderId === orderId; });
+  if (!CURRENT_PEDIDO) return;
+
+  document.getElementById('modal-title').textContent = 'Cobro — ' + orderId;
+  document.getElementById('btn-registrar').disabled = false;
+  document.getElementById('btn-registrar').textContent = '✓ Registrar abono';
+
+  // Cargar historial de pagos
+  document.getElementById('modal-body').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
+  document.getElementById('modal-cobro').classList.add('open');
+
+  var res = await apiPagos('pagos.orden.detalle', { orderId });
+  CURRENT_PAGOS = (res && res.pagos) ? res.pagos : [];
+  renderModalBody();
+}
+
+function renderModalBody() {
+  var p    = CURRENT_PEDIDO;
+  var saldo = p.saldo || 0;
+
+  var historial = '';
+  if (CURRENT_PAGOS.length) {
+    historial = '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:.06em;margin-bottom:6px">Historial de abonos</div>' +
+      '<div class="abonos-list">' +
+      CURRENT_PAGOS.map(function(ab) {
+        var esTransf = ab.tipoPago === 'Transferencia';
+        var comprob  = (esTransf && ab.comprobanteUrl)
+          ? '<a href="' + ab.comprobanteUrl + '" target="_blank" style="font-size:11px;color:var(--accent2);text-decoration:none">📎 Ver comprobante</a>'
+          : '';
+        return '<div class="abono-row">' +
+          '<div class="abono-left">' +
+            '<div style="font-weight:600">' + esc(ab.fechaAbono || ab.createdAt || '') + '</div>' +
+            '<div class="abono-tipo">' + esc(ab.tipoPago || '') +
+              (ab.refTransferencia ? ' · Ref: ' + esc(ab.refTransferencia) : '') +
+            '</div>' +
+            comprob +
+          '</div>' +
+          '<div class="abono-amt">+' + fmt(ab.monto) + '</div>' +
+        '</div>';
+      }).join('') +
+      '</div>';
+  }
+
+  document.getElementById('modal-body').innerHTML =
+    // Datos del pedido
+    '<div class="detail-grid">' +
+      di('Cliente',  p.customerName  || '—') +
+      di('Teléfono', p.customerPhone || '—') +
+      di('Total',    fmt(p.total)) +
+      di('Acumulado', fmt(p.montoAcumulado)) +
+    '</div>' +
+
+    // Saldo pendiente
+    '<div class="saldo-banner">' +
+      '<div class="saldo-info">' +
+        '<div class="saldo-txt">Saldo pendiente</div>' +
+        '<div class="saldo-num' + (saldo <= 0 ? ' zero' : '') + '" id="saldo-display">' + fmt(saldo) + '</div>' +
+      '</div>' +
+      (p.tipoPago ? '<span class="badge ' + (p.tipoPago === 'Crédito' ? 'credito' : 'contado') + '">' + p.tipoPago + '</span>' : '') +
+    '</div>' +
+
+    historial +
+
+    // Formulario de abono
+    (saldo > 0 ? formAbono(saldo) : '<div style="background:#dcfce7;border-radius:10px;padding:14px;text-align:center;font-weight:600;color:#166534;font-size:14px">✅ Pedido liquidado</div>');
+
+  // Actualizar botón
+  document.getElementById('btn-registrar').disabled = saldo <= 0;
+  if (saldo <= 0) document.getElementById('btn-registrar').textContent = '✅ Liquidado';
+
+  // Listeners del formulario
+  bindFormListeners();
+}
+
+function formAbono(saldo) {
+  return '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:.06em;margin-bottom:10px">Nuevo abono</div>' +
+
+    '<div class="form-section">' +
+      '<label class="form-label">Monto del abono</label>' +
+      '<input class="form-input" type="number" id="inp-monto" placeholder="0.00" min="0.01" max="' + saldo + '" step="0.01" value="' + saldo.toFixed(2) + '">' +
+    '</div>' +
+
+    '<div class="form-section">' +
+      '<label class="form-label">Tipo de pago</label>' +
+      '<div class="tipo-grid">' +
+        '<button class="tipo-btn sel" id="tipo-efectivo" onclick="selectTipo(\'Efectivo\')">💵 Efectivo</button>' +
+        '<button class="tipo-btn"     id="tipo-transferencia" onclick="selectTipo(\'Transferencia\')">🏦 Transferencia</button>' +
+      '</div>' +
+      '<input type="hidden" id="inp-tipo" value="Efectivo">' +
+    '</div>' +
+
+    '<div id="transferencia-extra" style="display:none">' +
+      '<div class="form-section">' +
+        '<label class="form-label">Nro. referencia bancaria</label>' +
+        '<input class="form-input" type="text" id="inp-ref" placeholder="Ej. TRF-2024-001234">' +
+      '</div>' +
+      '<div class="form-section">' +
+        '<label class="form-label">Comprobante de transferencia</label>' +
+        '<input type="file" id="inp-file" accept="image/*" style="display:none" onchange="previewFile(this)">' +
+        '<div class="upload-zone" id="upload-zone" onclick="document.getElementById(\'inp-file\').click()">' +
+          '<div style="font-size:22px">📎</div>' +
+          '<div style="font-size:13px;color:var(--muted);margin-top:4px">Toca para adjuntar imagen</div>' +
+          '<img id="upload-preview" class="upload-thumb" style="display:none">' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="form-section">' +
+      '<label class="form-label">Fecha del abono</label>' +
+      '<input class="form-input" type="date" id="inp-fecha" value="' + new Date().toISOString().split('T')[0] + '">' +
+    '</div>' +
+
+    '<div class="form-section">' +
+      '<label class="form-label">Notas (opcional)</label>' +
+      '<input class="form-input" type="text" id="inp-notas" placeholder="Observaciones...">' +
+    '</div>';
+}
+
+function bindFormListeners() {}
+
+function selectTipo(tipo) {
+  document.getElementById('inp-tipo').value = tipo;
+  document.getElementById('tipo-efectivo').className      = 'tipo-btn' + (tipo === 'Efectivo' ? ' sel' : '');
+  document.getElementById('tipo-transferencia').className = 'tipo-btn' + (tipo === 'Transferencia' ? ' sel' : '');
+  document.getElementById('transferencia-extra').style.display = tipo === 'Transferencia' ? 'block' : 'none';
+}
+
+function previewFile(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var zone = document.getElementById('upload-zone');
+  var prev = document.getElementById('upload-preview');
+  zone.classList.add('has-file');
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── CONFIRMAR ABONO ──────────────────────────────────────────
+async function confirmarAbono() {
+  var btn = document.getElementById('btn-registrar');
+  var monto = parseFloat(document.getElementById('inp-monto')?.value || 0);
+  var tipo  = document.getElementById('inp-tipo')?.value || 'Efectivo';
+  var ref   = document.getElementById('inp-ref')?.value  || '';
+  var fecha = document.getElementById('inp-fecha')?.value || '';
+  var notas = document.getElementById('inp-notas')?.value || '';
+
+  if (!monto || monto <= 0) { toast('Ingresa un monto válido', 'error'); return; }
+  if (tipo === 'Transferencia' && !ref) { toast('Ingresa el número de referencia', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Registrando...';
+
+  // Preparar comprobante si hay imagen
+  var comprobanteBase64 = '';
+  var comprobanteMime   = 'image/jpeg';
+  var comprobanteName   = '';
+  var fileInput = document.getElementById('inp-file');
+  if (tipo === 'Transferencia' && fileInput && fileInput.files[0]) {
+    var file = fileInput.files[0];
+    comprobanteMime = file.type;
+    comprobanteName = file.name;
+    comprobanteBase64 = await fileToBase64(file);
+  }
+
+  var payload = {
+    orderId:          CURRENT_PEDIDO.orderId,
+    monto:            monto,
+    tipoPago:         tipo,
+    refTransferencia: ref,
+    fechaAbono:       fecha,
+    notas:            notas,
+    comprobanteBase64,
+    comprobanteMime,
+    comprobanteName,
+  };
+
+  var res = await apiPagos('pagos.registrar', payload);
+  btn.disabled = false;
+  btn.textContent = '✓ Registrar abono';
+
+  if (!res) return;
+
+  toast(res.message || 'Abono registrado ✅', 'success');
+
+  // Actualizar pedido en memoria
+  var idx = ALL_PEDIDOS.findIndex(function(p) { return p.orderId === CURRENT_PEDIDO.orderId; });
+  if (idx >= 0) {
+    ALL_PEDIDOS[idx].montoAcumulado = res.montoAcumulado;
+    ALL_PEDIDOS[idx].saldo          = res.saldoPendiente;
+    if (res.cerrado) {
+      // Quitar de la lista de pendientes
+      ALL_PEDIDOS.splice(idx, 1);
+      closeModal();
+    } else {
+      CURRENT_PEDIDO = ALL_PEDIDOS[idx];
+      // Recargar historial
+      var res2 = await apiPagos('pagos.orden.detalle', { orderId: CURRENT_PEDIDO.orderId });
+      CURRENT_PAGOS = (res2 && res2.pagos) ? res2.pagos : [];
+      renderModalBody();
+    }
+  }
+
+  updateStats();
+  renderPedidos();
+}
+
+function fileToBase64(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function closeModal() {
+  document.getElementById('modal-cobro').classList.remove('open');
+  CURRENT_PEDIDO = null;
+  CURRENT_PAGOS  = [];
+}
+
+// ── HELPERS UI ───────────────────────────────────────────────
+function di(label, val) {
+  return '<div><div class="detail-label">' + label + '</div><div class="detail-val">' + esc(String(val)) + '</div></div>';
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function fmt(n) {
+  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(n || 0));
+}
+
+function toast(msg, type) {
+  type = type || 'success';
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = type;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(function() { el.style.display = 'none'; }, 3500);
+}
+
+// ── POLLING Y VISIBILIDAD ────────────────────────────────────
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) { clearInterval(POLL_TIMER); }
+  else { loadPedidos(true); iniciarPolling(); }
+});
+
+document.getElementById('modal-cobro').addEventListener('click', function(e) {
+  if (e.target === document.getElementById('modal-cobro')) closeModal();
+});
+
+// ── VOLVER AL PANEL ──────────────────────────────────────────
+function goBackPanel() {
+  var backend = localStorage.getItem('ld_backend') || '';
+  var store   = localStorage.getItem('ld_store')   || '';
+  var base    = window.location.href.split('?')[0].replace(/[^\/]+$/, '');
+  var url     = base + 'index.html';
+  if (backend) url += '?backend=' + encodeURIComponent(backend);
+  if (store)   url += (backend ? '&' : '?') + 'store=' + encodeURIComponent(store);
+  window.location.href = url;
+}
+
+// ── MONITOR INACTIVIDAD ──────────────────────────────────────
+var _modIdleWarn = null, _modIdleClose = null, _modCloseCount = null;
+
+function resetModIdle() {
+  clearTimeout(_modIdleWarn);
+  clearTimeout(_modIdleClose);
+  clearInterval(_modCloseCount);
+  var w = document.getElementById('mod-inactive-warn');
+  if (w) w.classList.remove('show');
+  _modIdleWarn = setTimeout(function() {
+    if (w) w.classList.add('show');
+    var secs = 60;
+    var el = document.getElementById('mod-inactive-secs');
+    if (el) el.textContent = secs;
+    _modCloseCount = setInterval(function() {
+      secs--;
+      if (el) el.textContent = secs;
+      if (secs <= 0) { clearInterval(_modCloseCount); goBackPanel(); }
+    }, 1000);
+    _modIdleClose = setTimeout(goBackPanel, 60000);
+  }, 10 * 60 * 1000);
+}
+
+function extendModSession() { resetModIdle(); }
+
+['click','touchstart','keypress','scroll','mousemove'].forEach(function(ev) {
+  document.addEventListener(ev, resetModIdle, { passive: true });
+});
+</script>
+
+<!-- Botón flotante volver -->
+<button id="btn-back-panel" onclick="goBackPanel()" title="Volver al panel principal">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+    <path d="M19 12H5M12 5l-7 7 7 7"/>
+  </svg>
+  Panel
+</button>
+
+<!-- Monitor inactividad -->
+<div id="mod-inactive-warn">
+  <span>⏱ Módulo inactivo — cierra en <strong id="mod-inactive-secs">60</strong>s</span>
+  <button id="mod-inactive-warn-btn" onclick="extendModSession()">Seguir aquí</button>
+</div>
+
+</body>
+</html>
