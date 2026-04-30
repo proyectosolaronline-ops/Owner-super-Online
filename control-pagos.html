@@ -3,279 +3,489 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Control de Pagos — LandingKit</title>
+<title>Control de Cobros — Easylink Tiendas</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
-:root{
-  --bg:#f4f4f0;--surface:#fff;--surface2:#f9f9f6;--border:#e8e8e2;
-  --accent:#1a1a1a;--accent2:#6366f1;--text:#1a1a1a;--muted:#888;
-  --danger:#ef4444;--warn:#f59e0b;--success:#16a34a;
-  --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
-  --r:12px;
+
+:root {
+  --bg:       #0a0f1e;
+  --surface:  #111827;
+  --surface2: #1a2235;
+  --border:   #1f2d45;
+  --accent:   #00e5a0;
+  --accent2:  #0ea5e9;
+  --danger:   #ef4444;
+  --warn:     #f59e0b;
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+  --font-d:   'Syne', sans-serif;
+  --font-b:   'DM Sans', sans-serif;
+  --mono:     'DM Mono', monospace;
+  --r:        12px;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;}
 
-.no-session{position:fixed;inset:0;background:var(--accent);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:24px;text-align:center}
-.no-session.show{display:flex}
-.no-session-ico{font-size:40px}
-.no-session-title{font-family:var(--font-d);font-size:18px;font-weight:800;color:#fff}
-.no-session-sub{font-size:13px;color:#aaa;line-height:1.5}
-.no-session-btn{padding:12px 24px;background:var(--accent2);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-b)}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: var(--font-b); background: var(--bg); color: var(--text); min-height: 100vh; }
 
-.app{display:none;flex-direction:column;min-height:100vh;}
-.app.visible{display:flex}
+/* ── NO SESSION ── */
+.no-session { position: fixed; inset: 0; background: var(--bg); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: 24px; text-align: center; }
+.no-session.show { display: flex; }
+.no-session-ico { font-size: 44px; }
+.no-session-title { font-family: var(--font-d); font-size: 20px; font-weight: 800; color: var(--accent); }
+.no-session-sub { font-size: 13px; color: var(--muted); }
+.no-session-btn { padding: 12px 24px; background: var(--surface2); color: var(--text); border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font-b); }
 
-.topbar{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between}
-.topbar-left{display:flex;align-items:center;gap:8px}
-.topbar-name{font-family:var(--font-d);font-size:14px;font-weight:700}
-.topbar-right{display:flex;align-items:center;gap:6px}
+/* ── APP ── */
+.app { display: none; flex-direction: column; min-height: 100vh; }
+.app.visible { display: flex; }
 
-.content{padding:16px;flex:1;max-width:860px;margin:0 auto;width:100%}
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px; height: 54px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+.topbar-logo {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #000; font-family: var(--font-d);
+}
+.topbar-name { font-family: var(--font-d); font-size: 14px; font-weight: 700; color: var(--text); }
+.topbar-sub { font-size: 11px; color: var(--muted); }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
 
-.btn{padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-b);display:inline-flex;align-items:center;gap:6px;transition:all .15s}
-.btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2)}
-.btn.success{background:var(--success);color:#fff;border-color:var(--success)}
-.btn.dark{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn.sm{padding:7px 12px;font-size:12px;border-radius:8px}
-.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
-.btn.full{width:100%;justify-content:center}
-.btn:disabled{opacity:.4;pointer-events:none}
+/* ── BUTTONS ── */
+.btn {
+  padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1.5px solid var(--border);
+  background: var(--surface2); color: var(--text);
+  font-family: var(--font-b); display: inline-flex; align-items: center; gap: 6px;
+  transition: all .15s; white-space: nowrap;
+}
+.btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+.btn.primary:hover { opacity: .88; }
+.btn.sky { background: var(--accent2); color: #fff; border-color: var(--accent2); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+.btn.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+.btn.sm { padding: 7px 12px; font-size: 12px; border-radius: 8px; }
+.btn.full { width: 100%; justify-content: center; }
+.btn:disabled { opacity: .35; pointer-events: none; }
 
-/* Tarjetas resumen */
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 12px}
-.stat-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
-.stat-val{font-family:var(--font-d);font-size:20px;font-weight:800}
-.stat-val.green{color:var(--success)}
-.stat-val.amber{color:var(--warn)}
-.stat-val.purple{color:var(--accent2)}
+/* ── CONTENT ── */
+.content { padding: 16px; flex: 1; }
 
-/* Barra de búsqueda */
-.search-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-b);background:var(--surface);color:var(--text);margin-bottom:12px}
-.search-input:focus{outline:none;border-color:var(--accent2)}
+/* ── RESUMEN CARDS ── */
+.resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.res-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.res-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.res-card.verde::before { background: var(--accent); }
+.res-card.azul::before  { background: var(--accent2); }
+.res-card.warn::before  { background: var(--warn); }
+.res-card.danger::before{ background: var(--danger); }
+.res-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; }
+.res-val { font-family: var(--font-d); font-size: 20px; font-weight: 800; }
+.res-val.verde  { color: var(--accent); }
+.res-val.azul   { color: var(--accent2); }
+.res-val.warn   { color: var(--warn); }
+.res-val.danger { color: var(--danger); }
+.res-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
-/* Tabla */
-.tbl-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
-table{width:100%;border-collapse:collapse}
-th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1.5px solid var(--border);background:var(--surface2)}
-td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
-tr:last-child td{border-bottom:none}
+/* ── FILTROS ── */
+.filters-bar {
+  display: flex; gap: 6px; overflow-x: auto;
+  padding-bottom: 4px; margin-bottom: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+.filters-bar::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0; padding: 7px 14px; border-radius: 99px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--muted); transition: all .15s; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.filter-chip.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.chip-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; border-radius: 99px;
+  font-size: 10px; font-weight: 700; padding: 0 4px;
+  background: rgba(255,255,255,.1);
+}
+.filter-chip.active .chip-count { background: rgba(0,0,0,.2); }
 
-/* Badges */
-.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:600}
-.badge.pendiente{background:#fef9c3;color:#854d0e}
-.badge.parcial{background:#dbeafe;color:#1e40af}
-.badge.pagado{background:#dcfce7;color:#166534}
-.badge.credito{background:#f3e8ff;color:#7e22ce}
-.badge.contado{background:#f0fdf4;color:#166534}
+/* ── SEARCH ── */
+.search-wrap { position: relative; margin-bottom: 12px; }
+.search-input {
+  width: 100%; padding: 11px 14px 11px 38px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: 14px; font-family: var(--font-b);
+  background: var(--surface); color: var(--text);
+}
+.search-input:focus { outline: none; border-color: var(--accent); }
+.search-ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 15px; pointer-events: none; }
 
-/* Progress bar saldo */
-.progress-wrap{width:100%;height:5px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:4px}
-.progress-bar{height:100%;border-radius:99px;background:var(--accent2);transition:width .3s}
-.progress-bar.full{background:var(--success)}
+/* ── TABLA PEDIDOS ── */
+.tbl-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  padding: 9px 12px; text-align: left;
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .05em;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+td { padding: 12px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr.clickable { cursor: pointer; transition: background .1s; }
+tr.clickable:hover { background: var(--surface2); }
 
-/* Modal */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
-.overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
-.modal-hdr{padding:16px 20px 14px;border-bottom:1.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:1}
-.modal-title{font-family:var(--font-d);font-size:15px;font-weight:700}
-.modal-body{padding:20px}
-.modal-foot{padding:14px 20px;border-top:1.5px solid var(--border);display:flex;gap:8px}
-.modal-foot .btn{flex:1;justify-content:center}
+/* ── BADGE ESTADO ── */
+.badge {
+  display: inline-flex; align-items: center; padding: 3px 9px;
+  border-radius: 99px; font-size: 11px; font-weight: 700;
+}
+.badge.pendiente  { background: rgba(245,158,11,.15); color: var(--warn); border: 1px solid rgba(245,158,11,.3); }
+.badge.parcial    { background: rgba(14,165,233,.15);  color: var(--accent2); border: 1px solid rgba(14,165,233,.3); }
+.badge.liquidado  { background: rgba(0,229,160,.15);   color: var(--accent);  border: 1px solid rgba(0,229,160,.3); }
 
-/* Detalle */
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.detail-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
-.detail-val{font-weight:600;font-size:13px;word-break:break-word}
+/* ── PROGRESS BAR ── */
+.progress-wrap { margin-top: 4px; }
+.progress-bar { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; transition: width .4s; }
+.progress-fill.verde  { background: var(--accent); }
+.progress-fill.azul   { background: var(--accent2); }
+.progress-fill.warn   { background: var(--warn); }
 
-/* Saldo destacado */
-.saldo-banner{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
-.saldo-info{display:flex;flex-direction:column;gap:2px}
-.saldo-txt{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700}
-.saldo-num{font-family:var(--font-d);font-size:24px;font-weight:800;color:var(--warn)}
-.saldo-num.zero{color:var(--success)}
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+.empty-ico { font-size: 40px; margin-bottom: 10px; }
+.empty h3 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.spinner { width: 22px; height: 22px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* Historial abonos */
-.abonos-list{background:var(--surface2);border-radius:10px;overflow:hidden;margin-bottom:16px}
-.abono-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px}
-.abono-row:last-child{border-bottom:none}
-.abono-left{display:flex;flex-direction:column;gap:2px}
-.abono-tipo{font-size:11px;color:var(--muted)}
-.abono-amt{font-weight:700;font-family:var(--font-d);font-size:15px;color:var(--success)}
+/* ── MODAL ── */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; align-items: flex-end; justify-content: center; backdrop-filter: blur(3px); }
+.overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-height: 94vh; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom); }
+.modal-hdr {
+  padding: 16px 20px 14px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; background: var(--surface); z-index: 1;
+}
+.modal-title { font-family: var(--font-d); font-size: 16px; font-weight: 700; color: var(--text); }
+.modal-body { padding: 20px; }
+.modal-foot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+.modal-foot .btn { flex: 1; justify-content: center; }
 
-/* Form abono */
-.form-section{margin-bottom:14px}
-.form-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
-.form-input{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font-b);background:var(--surface);color:var(--text)}
-.form-input:focus{outline:none;border-color:var(--accent2)}
-.tipo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
-.tipo-btn{padding:10px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;font-family:var(--font-b)}
-.tipo-btn.sel{border-color:var(--accent2);background:#ede9fe;color:var(--accent2)}
+/* ── DETAIL GRID ── */
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+.detail-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+.detail-val { font-weight: 600; font-size: 13px; color: var(--text); }
 
-/* Upload comprobante */
-.upload-zone{border:1.5px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .15s;margin-top:8px}
-.upload-zone:hover{border-color:var(--accent2)}
-.upload-zone.has-file{border-color:var(--success);background:#f0fdf4}
-.upload-thumb{max-width:100%;max-height:140px;border-radius:8px;margin-top:8px;object-fit:contain}
+/* ── SALDO HERO ── */
+.saldo-hero {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 18px; margin-bottom: 18px; text-align: center;
+}
+.saldo-hero-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.saldo-hero-val { font-family: var(--font-d); font-size: 34px; font-weight: 800; color: var(--warn); }
+.saldo-hero-val.cero { color: var(--accent); }
+.saldo-hero-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.saldo-mini-grid { display: flex; gap: 12px; justify-content: center; margin-top: 10px; }
+.saldo-mini { text-align: center; }
+.saldo-mini-label { font-size: 10px; color: var(--muted); }
+.saldo-mini-val { font-size: 14px; font-weight: 700; }
 
-/* Toast */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);border-radius:10px;padding:11px 18px;font-size:13px;font-weight:600;z-index:9999;display:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.18)}
-#toast.success{background:var(--success);color:#fff}
-#toast.error{background:var(--danger);color:#fff}
-#toast.warn{background:var(--warn);color:#fff}
+/* ── FORM ABONO ── */
+.abono-box {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 16px; margin-bottom: 18px;
+}
+.abono-title { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
+.form-row { margin-bottom: 12px; }
+.form-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; display: block; }
+.form-input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: 9px;
+  font-size: 15px; font-family: var(--font-b);
+  background: var(--surface); color: var(--text);
+}
+.form-input:focus { outline: none; border-color: var(--accent); }
+.metodo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.metodo-btn {
+  padding: 10px; border-radius: 9px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--muted);
+  font-family: var(--font-b); text-align: center; transition: all .15s;
+}
+.metodo-btn.sel { background: rgba(0,229,160,.1); color: var(--accent); border-color: var(--accent); }
 
-.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* ── HISTORIAL ── */
+.historial-wrap { margin-top: 16px; }
+.historial-title { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.pago-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 9px; margin-bottom: 6px;
+}
+.pago-izq { display: flex; flex-direction: column; gap: 2px; }
+.pago-metodo { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+.pago-fecha { font-size: 10px; color: var(--muted); }
+.pago-monto { font-family: var(--font-d); font-size: 16px; font-weight: 700; color: var(--accent); }
 
-.empty{text-align:center;padding:40px 20px;color:var(--muted)}
-.empty-ico{font-size:36px;margin-bottom:10px}
-.empty h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  border-radius: 10px; padding: 11px 18px; font-size: 13px; font-weight: 600;
+  z-index: 9999; display: none; white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+#toast.success { background: var(--accent); color: #000; }
+#toast.error   { background: var(--danger); color: #fff; }
+#toast.warn    { background: var(--warn);   color: #000; }
 
-@keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+/* ── BACK BTN ── */
+#btn-back {
+  position: fixed; bottom: 20px; right: 16px; z-index: 88;
+  background: var(--surface2); color: var(--text);
+  border: 1.5px solid var(--border); border-radius: 99px;
+  padding: 10px 16px 10px 12px; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; gap: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+}
+
+/* ── TIPO PAGO SELECTOR (en modal) ── */
+.tipo-selector { display: flex; gap: 8px; margin-bottom: 16px; }
+.tipo-btn {
+  flex: 1; padding: 10px 8px; border-radius: 9px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--muted);
+  font-family: var(--font-b); text-align: center; transition: all .15s;
+}
+.tipo-btn.sel-credito  { background: rgba(14,165,233,.12); color: var(--accent2); border-color: var(--accent2); }
+.tipo-btn.sel-contado  { background: rgba(0,229,160,.12);  color: var(--accent);  border-color: var(--accent); }
 
 @media(min-width:768px){
-  .overlay{align-items:center}
-  .modal{border-radius:14px;max-width:520px;width:100%}
-}
-
-/* Botón flotante volver */
-#btn-back-panel{
-  position:fixed;bottom:80px;right:16px;z-index:88;
-  background:#6366f1;color:#fff;
-  border:none;border-radius:99px;
-  padding:10px 16px 10px 12px;
-  font-size:13px;font-weight:700;
-  display:flex;align-items:center;gap:6px;
-  box-shadow:0 4px 16px rgba(0,0,0,.3);
-  cursor:pointer;font-family:inherit;
-  transition:opacity .2s,transform .2s;white-space:nowrap;
-}
-#btn-back-panel:hover{opacity:.9;transform:translateY(-2px)}
-#btn-back-panel svg{width:16px;height:16px;flex-shrink:0}
-
-/* Monitor inactividad */
-#mod-inactive-warn{
-  display:none;position:fixed;top:0;left:0;right:0;z-index:200;
-  background:#f59e0b;color:#000;
-  padding:10px 16px;font-size:13px;font-weight:600;
-  align-items:center;justify-content:space-between;gap:10px;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
-}
-#mod-inactive-warn.show{display:flex}
-#mod-inactive-warn-btn{
-  background:rgba(0,0,0,.15);border:none;border-radius:6px;
-  padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
+  .overlay { align-items: center; }
+  .modal { border-radius: 14px; max-width: 520px; width: 100%; }
+  .content { max-width: 860px; margin: 0 auto; }
+  .resumen-grid { grid-template-columns: repeat(4,1fr); }
 }
 </style>
 </head>
 <body>
 
+<!-- NO SESSION -->
 <div class="no-session" id="no-session">
   <div class="no-session-ico">🔒</div>
   <div class="no-session-title">Sesión no encontrada</div>
-  <div class="no-session-sub">Accede primero desde el panel principal de LandingKit.</div>
-  <button class="no-session-btn" onclick="history.back()">← Volver al panel</button>
+  <div class="no-session-sub">Accede desde el panel de Easylink Tiendas.</div>
+  <button class="no-session-btn" onclick="history.back()">← Volver</button>
 </div>
 
+<!-- APP -->
 <div class="app" id="app">
+
+  <!-- TOPBAR -->
   <div class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-name" id="topbar-name">Control de Pagos</div>
+    <div class="topbar-brand">
+      <div class="topbar-logo">EL</div>
+      <div>
+        <div class="topbar-name" id="topbar-name">Control de Cobros</div>
+        <div class="topbar-sub" id="topbar-sub">Easylink Tiendas</div>
+      </div>
     </div>
     <div class="topbar-right">
-      <span id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;animation:livepulse 2s ease-in-out infinite"></span>
-      <span id="live-label" style="font-size:11px;color:var(--muted)">En vivo</span>
-      <button class="btn sm ghost" onclick="loadPedidos()" title="Actualizar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      <button class="btn sm ghost" onclick="loadAll()" title="Actualizar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
       </button>
-      <button class="btn ghost sm" style="padding:4px 10px;color:var(--muted)" onclick="history.back()">← Panel</button>
+      <button class="btn ghost sm" onclick="goBack()">← Pedidos</button>
     </div>
   </div>
 
   <div class="content">
 
-    <!-- Tarjetas resumen -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Pendientes</div>
-        <div class="stat-val amber" id="stat-pendientes">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Saldo total</div>
-        <div class="stat-val purple" id="stat-saldo">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Cobrado hoy</div>
-        <div class="stat-val green" id="stat-hoy">—</div>
-      </div>
+    <!-- RESUMEN CARDS -->
+    <div class="resumen-grid" id="resumen-grid">
+      <div class="res-card warn"><div class="res-label">Por cobrar</div><div class="res-val warn" id="r-porcobrar">—</div><div class="res-sub" id="r-sub-porcobrar">—</div></div>
+      <div class="res-card verde"><div class="res-label">Cobrado</div><div class="res-val verde" id="r-cobrado">—</div><div class="res-sub" id="r-sub-cobrado">hoy: <span id="r-hoy">0</span></div></div>
+      <div class="res-card azul"><div class="res-label">Parciales</div><div class="res-val azul" id="r-parciales">—</div><div class="res-sub">con abonos</div></div>
+      <div class="res-card danger"><div class="res-label">Pendientes</div><div class="res-val danger" id="r-pendientes">—</div><div class="res-sub">sin abono</div></div>
     </div>
 
-    <input class="search-input" id="search-input" placeholder="🔍 Buscar por cliente, ID o referencia..." oninput="renderPedidos()">
+    <!-- FILTROS -->
+    <div class="filters-bar">
+      <div class="filter-chip active" data-f="" onclick="setFilter(this,'')">Todos <span class="chip-count" id="cnt-all">0</span></div>
+      <div class="filter-chip" data-f="parcial"   onclick="setFilter(this,'parcial')">⚡ Parcial <span class="chip-count" id="cnt-parcial">0</span></div>
+      <div class="filter-chip" data-f="pendiente" onclick="setFilter(this,'pendiente')">⏳ Pendiente <span class="chip-count" id="cnt-pendiente">0</span></div>
+      <div class="filter-chip" data-f="liquidado" onclick="setFilter(this,'liquidado')">✅ Liquidado <span class="chip-count" id="cnt-liquidado">0</span></div>
+    </div>
 
-    <div class="tbl-wrap" id="pedidos-wrap">
+    <!-- SEARCH -->
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input class="search-input" id="search-inp" placeholder="Buscar por cliente o ID pedido..." oninput="renderOrders()">
+    </div>
+
+    <!-- TABLA -->
+    <div class="tbl-wrap" id="orders-wrap">
       <div class="empty"><div class="spinner"></div></div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /content -->
+</div><!-- /app -->
 
-<!-- Modal cobro -->
+<!-- MODAL DETALLE PEDIDO + REGISTRAR ABONO -->
 <div class="overlay" id="modal-cobro">
   <div class="modal">
     <div class="modal-hdr">
-      <div class="modal-title" id="modal-title">Registrar Pago</div>
+      <div class="modal-title" id="modal-title">Cobro</div>
       <button class="btn ghost sm" onclick="closeModal()">✕</button>
     </div>
-    <div class="modal-body" id="modal-body">
-      <!-- Se llena dinámicamente -->
-    </div>
+    <div class="modal-body">
+
+      <!-- TIPO PAGO -->
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Tipo de pago</div>
+      <div class="tipo-selector">
+        <button class="tipo-btn" id="tbtn-credito" onclick="setTipoPago('credito')">💳 Crédito</button>
+        <button class="tipo-btn" id="tbtn-contado" onclick="setTipoPago('contado')">💵 Contado</button>
+      </div>
+
+      <!-- DATOS CLIENTE -->
+      <div class="detail-grid" id="detail-grid"></div>
+
+      <!-- SALDO HERO -->
+      <div class="saldo-hero" id="saldo-hero">
+        <div class="saldo-hero-label">Saldo pendiente</div>
+        <div class="saldo-hero-val" id="saldo-val">—</div>
+        <div class="saldo-hero-sub" id="saldo-sub">—</div>
+        <div class="saldo-mini-grid">
+          <div class="saldo-mini">
+            <div class="saldo-mini-label">Total pedido</div>
+            <div class="saldo-mini-val" id="mini-total">—</div>
+          </div>
+          <div class="saldo-mini">
+            <div class="saldo-mini-label">Pagado</div>
+            <div class="saldo-mini-val" style="color:var(--accent)" id="mini-pagado">—</div>
+          </div>
+        </div>
+        <!-- BARRA PROGRESO -->
+        <div class="progress-wrap" style="margin-top:12px">
+          <div class="progress-bar">
+            <div class="progress-fill verde" id="progress-fill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM ABONO (solo si es credito y no liquidado) -->
+      <div class="abono-box" id="abono-box">
+        <div class="abono-title">➕ Registrar abono</div>
+
+        <div class="form-row">
+          <label class="form-label">Monto del abono</label>
+          <input class="form-input" id="abono-monto" type="number" min="1" step="0.01" placeholder="0.00">
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Método de pago</label>
+          <div class="metodo-grid">
+            <button class="metodo-btn sel" id="mbtn-efectivo"      onclick="setMetodo('efectivo')">💵 Efectivo</button>
+            <button class="metodo-btn"     id="mbtn-transferencia" onclick="setMetodo('transferencia')">🏦 Transferencia</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Nota (opcional)</label>
+          <input class="form-input" id="abono-nota" type="text" placeholder="Ej: abono quincenal...">
+        </div>
+
+        <button class="btn primary full" id="btn-registrar" onclick="registrarAbono()">
+          Registrar abono
+        </button>
+      </div>
+
+      <!-- HISTORIAL DE ABONOS -->
+      <div class="historial-wrap">
+        <div class="historial-title">Historial de abonos</div>
+        <div id="historial-list"><div class="empty" style="padding:20px"><div class="spinner"></div></div></div>
+      </div>
+
+    </div><!-- /modal-body -->
     <div class="modal-foot">
-      <button class="btn full" onclick="closeModal()">Cancelar</button>
-      <button class="btn success full" id="btn-registrar" onclick="confirmarAbono()">
-        ✓ Registrar abono
-      </button>
+      <button class="btn full" onclick="closeModal()">Cerrar</button>
     </div>
   </div>
 </div>
+
+<button id="btn-back" onclick="goBack()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+  Pedidos
+</button>
 
 <div id="toast"></div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────
-const BACKEND_PAGOS = (new URLSearchParams(location.search).get('backend_pagos'))
-  || localStorage.getItem('ld_backend_pagos')
-  || 'https://script.google.com/macros/s/AKfycbwe35LZGuhRyrVnRzOKAZf4TAmoB4Awp9CyGlSnaKhtGaiAUM8w6_94KJgxIGd0xcov/exec'; // ← reemplazar al desplegar
-
-const BACKEND = (new URLSearchParams(location.search).get('backend'))
+// ── CONFIG ────────────────────────────────────────────────────
+const BACKEND_COBROS = (new URLSearchParams(location.search).get('backendCobros'))
+  || localStorage.getItem('ld_backend_cobros') || '';
+const BACKEND_MAIN   = (new URLSearchParams(location.search).get('backend'))
   || localStorage.getItem('ld_backend') || '';
 const TOKEN    = localStorage.getItem('ld_token')  || '';
 const STORE_ID = localStorage.getItem('ld_store')  || '';
 
-let ALL_PEDIDOS   = [];
-let CURRENT_PEDIDO = null;
-let CURRENT_PAGOS  = [];
-let POLL_TIMER     = null;
-const POLL_INTERVAL = 30000;
+let ALL_ORDERS     = [];
+let CURRENT_ORDER  = null;
+let CURRENT_METODO = 'efectivo';
+let CURRENT_FILTER = '';
+let STORE_CFG      = {};
 
-// ── INIT ────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────
 window.addEventListener('load', function() {
-  if (!TOKEN || !STORE_ID) {
+  if (!TOKEN || !STORE_ID || !BACKEND_COBROS) {
     document.getElementById('no-session').classList.add('show');
     return;
   }
   document.getElementById('app').classList.add('visible');
-  loadPedidos().then(iniciarPolling);
-  resetModIdle();
+  loadAll();
 });
 
-// ── API HELPERS ─────────────────────────────────────────────
-async function apiPagos(action, data) {
+async function loadAll() {
+  await Promise.all([loadStoreInfo(), loadResumen(), loadOrders()]);
+}
+
+// ── API COBROS ────────────────────────────────────────────────
+async function apiCobros(action, data) {
   data = data || {};
   try {
-    var payload = Object.assign({ action, storeId: STORE_ID, token: TOKEN }, data);
-    var res = await fetch(BACKEND_PAGOS, {
+    var payload = Object.assign({ action: action, storeId: STORE_ID, token: TOKEN }, data);
+    var res = await fetch(BACKEND_COBROS, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
@@ -283,322 +493,310 @@ async function apiPagos(action, data) {
     var json = await res.json();
     if (json.error) throw new Error(json.error);
     return json;
-  } catch(e) {
-    toast(e.message, 'error');
-    return null;
-  }
+  } catch(e) { toast(e.message, 'error'); return null; }
 }
 
-// ── CARGA PEDIDOS PENDIENTES ─────────────────────────────────
-async function loadPedidos(silent) {
-  if (!silent) document.getElementById('pedidos-wrap').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
-  setLive(true);
-  const res = await apiPagos('pagos.pedidos.pendientes');
-  setLive(false);
-  if (!res) return;
-  ALL_PEDIDOS = res.pedidos || [];
-  updateStats();
-  renderPedidos();
+// ── API MAIN (para store.info) ─────────────────────────────────
+async function apiMain(action, data) {
+  data = data || {};
+  try {
+    var payload = Object.assign({ action: action, storeId: STORE_ID, token: TOKEN }, data);
+    var res = await fetch(BACKEND_MAIN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  } catch(e) { return null; }
 }
 
-function setLive(loading) {
-  var dot = document.getElementById('live-dot');
-  var lbl = document.getElementById('live-label');
-  if (!dot) return;
-  dot.style.background = loading ? '#f59e0b' : '#16a34a';
-  lbl.textContent = loading ? 'Actualizando...' : 'En vivo';
+async function loadStoreInfo() {
+  if (!BACKEND_MAIN) return;
+  var r = await apiMain('store.info');
+  if (!r || !r.store) return;
+  STORE_CFG = r.store.config || {};
+  var nombre = r.store.name || 'Mi Tienda';
+  document.getElementById('topbar-name').textContent = nombre + ' · Cobros';
+  document.getElementById('topbar-sub').textContent  = 'Easylink Tiendas';
 }
 
-function iniciarPolling() {
-  POLL_TIMER = setInterval(function() { loadPedidos(true); }, POLL_INTERVAL);
+// ── RESUMEN ───────────────────────────────────────────────────
+async function loadResumen() {
+  var r = await apiCobros('cobro.resumen');
+  if (!r || !r.resumen) return;
+  var res = r.resumen;
+  document.getElementById('r-porcobrar').textContent   = fmt(res.totalPorCobrar || 0);
+  document.getElementById('r-cobrado').textContent     = fmt(res.totalCobrado   || 0);
+  document.getElementById('r-hoy').textContent         = res.liquidadosHoy || 0;
+  document.getElementById('r-parciales').textContent   = res.parciales  || 0;
+  document.getElementById('r-pendientes').textContent  = res.pendientes || 0;
+  document.getElementById('r-sub-porcobrar').textContent = (res.parciales||0) + ' parcial · ' + (res.pendientes||0) + ' pend.';
+  document.getElementById('r-sub-cobrado').textContent   = 'liquidados hoy: ' + (res.liquidadosHoy||0);
 }
 
-// ── STATS ────────────────────────────────────────────────────
-function updateStats() {
-  var totalSaldo = ALL_PEDIDOS.reduce(function(s, p) { return s + (p.saldo || 0); }, 0);
-  document.getElementById('stat-pendientes').textContent = ALL_PEDIDOS.length;
-  document.getElementById('stat-saldo').textContent = fmt(totalSaldo);
-
-  // Cobrado hoy: buscar en localStorage si hay cache, sino mostrar —
-  // En producción esto vendría de una query de pagos del día
-  document.getElementById('stat-hoy').textContent = '—';
+// ── CARGAR PEDIDOS ────────────────────────────────────────────
+async function loadOrders() {
+  document.getElementById('orders-wrap').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
+  // Cargar todos (incluyendo liquidados) para que filtros funcionen
+  var r = await apiCobros('cobro.orders.list', { soloActivos: 'false' });
+  if (!r) return;
+  ALL_ORDERS = r.orders || [];
+  updateCounts();
+  renderOrders();
 }
 
-// ── RENDER TABLA ─────────────────────────────────────────────
-function renderPedidos() {
-  var q    = (document.getElementById('search-input').value || '').toLowerCase();
-  var list = ALL_PEDIDOS;
-  if (q) list = list.filter(function(p) {
-    return (p.orderId       || '').toLowerCase().includes(q) ||
-           (p.customerName  || '').toLowerCase().includes(q) ||
-           (p.customerPhone || '').toLowerCase().includes(q);
+function updateCounts() {
+  document.getElementById('cnt-all').textContent       = ALL_ORDERS.length;
+  document.getElementById('cnt-parcial').textContent   = ALL_ORDERS.filter(function(o){ return o.estadoCobro==='parcial';   }).length;
+  document.getElementById('cnt-pendiente').textContent = ALL_ORDERS.filter(function(o){ return o.estadoCobro==='pendiente'; }).length;
+  document.getElementById('cnt-liquidado').textContent = ALL_ORDERS.filter(function(o){ return o.estadoCobro==='liquidado'; }).length;
+}
+
+function setFilter(el, f) {
+  CURRENT_FILTER = f;
+  document.querySelectorAll('.filter-chip').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  renderOrders();
+}
+
+function getFiltered() {
+  var q = (document.getElementById('search-inp').value || '').toLowerCase();
+  var list = CURRENT_FILTER
+    ? ALL_ORDERS.filter(function(o){ return o.estadoCobro === CURRENT_FILTER; })
+    : ALL_ORDERS;
+  if (q) list = list.filter(function(o){
+    return (o.orderId      || '').toLowerCase().includes(q) ||
+           (o.customerName || '').toLowerCase().includes(q);
   });
+  return list;
+}
 
-  var wrap = document.getElementById('pedidos-wrap');
-  if (!list.length) {
-    wrap.innerHTML = '<div class="empty"><div class="empty-ico">💳</div><h3>Sin pedidos pendientes</h3><p style="font-size:13px;margin-top:4px">Todos los pedidos están al corriente</p></div>';
+function renderOrders() {
+  var orders = getFiltered();
+  var wrap   = document.getElementById('orders-wrap');
+  if (!orders.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-ico">💳</div><h3>Sin pedidos a crédito</h3><p style="font-size:12px;margin-top:4px">Define pedidos como crédito desde el módulo Pedidos.</p></div>';
+    return;
+  }
+  wrap.innerHTML = '<table><thead><tr><th>Cliente</th><th>Saldo</th><th>Estado</th></tr></thead><tbody>' +
+    orders.map(function(o) {
+      var pct = o.total > 0 ? Math.round((o.acumuladoPagos / o.total) * 100) : 0;
+      return '<tr class="clickable" data-id="' + esc(o.orderId) + '" onclick="openDetail(this.dataset.id)">' +
+        '<td>' +
+          '<div style="font-weight:600">' + esc(o.customerName || '—') + '</div>' +
+          '<div style="font-size:11px;color:var(--muted)">' + esc(o.orderId) + '</div>' +
+          '<div class="progress-wrap" style="margin-top:5px"><div class="progress-bar"><div class="progress-fill ' + progressColor(o.estadoCobro) + '" style="width:' + pct + '%"></div></div></div>' +
+        '</td>' +
+        '<td>' +
+          '<div style="font-weight:700;font-family:var(--font-d)">' + fmt(o.saldoPendiente) + '</div>' +
+          '<div style="font-size:10px;color:var(--muted)">de ' + fmt(o.total) + '</div>' +
+        '</td>' +
+        '<td><span class="badge ' + esc(o.estadoCobro) + '">' + labelEstado(o.estadoCobro) + '</span></td>' +
+      '</tr>';
+    }).join('') +
+  '</tbody></table>';
+}
+
+function progressColor(estado) {
+  return { liquidado:'verde', parcial:'azul', pendiente:'warn' }[estado] || 'warn';
+}
+
+// ── MODAL DETALLE ─────────────────────────────────────────────
+async function openDetail(orderId) {
+  var o = ALL_ORDERS.find(function(x){ return x.orderId === orderId; });
+  if (!o) return;
+  CURRENT_ORDER  = o;
+  CURRENT_METODO = 'efectivo';
+
+  document.getElementById('modal-title').textContent = 'Pedido ' + orderId;
+
+  // Tipo pago selector
+  actualizarTipoBtns(o.tipoPago || 'credito');
+
+  // Detail grid
+  document.getElementById('detail-grid').innerHTML =
+    di('Cliente',  o.customerName  || '—') +
+    di('Teléfono', o.customerPhone || '—') +
+    di('Email',    o.customerEmail || '—') +
+    di('Fecha',    o.createdAt ? new Date(o.createdAt).toLocaleDateString('es-MX') : '—');
+
+  // Saldo hero
+  renderSaldoHero(o);
+
+  // Mostrar u ocultar caja de abono
+  var esCredito  = (o.tipoPago || 'credito') === 'credito';
+  var liquidado  = o.estadoCobro === 'liquidado';
+  document.getElementById('abono-box').style.display = (esCredito && !liquidado) ? 'block' : 'none';
+
+  // Reset form
+  document.getElementById('abono-monto').value = '';
+  document.getElementById('abono-nota').value  = '';
+  setMetodo('efectivo');
+
+  // Cargar historial
+  document.getElementById('historial-list').innerHTML = '<div class="empty" style="padding:16px"><div class="spinner"></div></div>';
+  document.getElementById('modal-cobro').classList.add('open');
+
+  var hist = await apiCobros('cobro.pago.historial', { orderId: orderId });
+  renderHistorial(hist ? hist.pagos || [] : []);
+}
+
+function renderSaldoHero(o) {
+  var saldo     = o.saldoPendiente || 0;
+  var total     = o.total          || 0;
+  var acumulado = o.acumuladoPagos || 0;
+  var pct       = total > 0 ? Math.round((acumulado / total) * 100) : 0;
+
+  var valEl = document.getElementById('saldo-val');
+  valEl.textContent = fmt(saldo);
+  valEl.className   = 'saldo-hero-val' + (saldo === 0 ? ' cero' : '');
+
+  document.getElementById('saldo-sub').textContent = saldo === 0
+    ? '✅ Liquidado completo'
+    : pct + '% pagado';
+  document.getElementById('mini-total').textContent  = fmt(total);
+  document.getElementById('mini-pagado').textContent = fmt(acumulado);
+
+  var fill = document.getElementById('progress-fill');
+  fill.style.width = pct + '%';
+  fill.className   = 'progress-fill ' + progressColor(o.estadoCobro);
+}
+
+function renderHistorial(pagos) {
+  var wrap = document.getElementById('historial-list');
+  if (!pagos.length) {
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">Sin abonos registrados.</div>';
+    return;
+  }
+  wrap.innerHTML = pagos.map(function(p) {
+    var ico = p.metodoPago === 'transferencia' ? '🏦' : '💵';
+    return '<div class="pago-item">' +
+      '<div class="pago-izq">' +
+        '<div class="pago-metodo">' + ico + ' ' + (p.metodoPago || 'efectivo') + '</div>' +
+        (p.nota ? '<div class="pago-fecha" style="color:var(--muted)">' + esc(p.nota) + '</div>' : '') +
+        '<div class="pago-fecha">' + (p.fecha ? new Date(p.fecha).toLocaleDateString('es-MX') : '—') + '</div>' +
+      '</div>' +
+      '<div class="pago-monto">+' + fmt(p.monto) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── TIPO PAGO ─────────────────────────────────────────────────
+function actualizarTipoBtns(tipo) {
+  document.getElementById('tbtn-credito').className = 'tipo-btn' + (tipo === 'credito' ? ' sel-credito' : '');
+  document.getElementById('tbtn-contado').className = 'tipo-btn' + (tipo === 'contado' ? ' sel-contado' : '');
+}
+
+async function setTipoPago(tipo) {
+  if (!CURRENT_ORDER) return;
+  if (CURRENT_ORDER.tipoPago === tipo) return;
+
+  actualizarTipoBtns(tipo);
+  var r = await apiCobros('cobro.orden.tipopago', {
+    orderId:  CURRENT_ORDER.orderId,
+    tipoPago: tipo,
+  });
+  if (!r) { actualizarTipoBtns(CURRENT_ORDER.tipoPago); return; }
+
+  CURRENT_ORDER.tipoPago = tipo;
+  // Actualizar en lista
+  var o = ALL_ORDERS.find(function(x){ return x.orderId === CURRENT_ORDER.orderId; });
+  if (o) o.tipoPago = tipo;
+
+  var liquidado = CURRENT_ORDER.estadoCobro === 'liquidado';
+  document.getElementById('abono-box').style.display = (tipo === 'credito' && !liquidado) ? 'block' : 'none';
+
+  toast('Tipo de pago: ' + tipo, 'success');
+  renderOrders();
+}
+
+// ── MÉTODO PAGO ───────────────────────────────────────────────
+function setMetodo(m) {
+  CURRENT_METODO = m;
+  document.getElementById('mbtn-efectivo').className      = 'metodo-btn' + (m === 'efectivo'      ? ' sel' : '');
+  document.getElementById('mbtn-transferencia').className = 'metodo-btn' + (m === 'transferencia' ? ' sel' : '');
+}
+
+// ── REGISTRAR ABONO ───────────────────────────────────────────
+async function registrarAbono() {
+  if (!CURRENT_ORDER) return;
+  var monto = parseFloat(document.getElementById('abono-monto').value || '0');
+  var nota  = document.getElementById('abono-nota').value.trim();
+
+  if (!monto || monto <= 0) { toast('Ingresa un monto válido', 'warn'); return; }
+  if (monto > CURRENT_ORDER.saldoPendiente) {
+    toast('El abono supera el saldo pendiente (' + fmt(CURRENT_ORDER.saldoPendiente) + ')', 'warn');
     return;
   }
 
-  wrap.innerHTML = '<table><thead><tr>' +
-    '<th>Cliente</th><th>Pedido</th><th>Saldo</th><th>Tipo</th><th></th>' +
-    '</tr></thead><tbody>' +
-    list.map(function(p) {
-      var pct   = p.total > 0 ? Math.min(100, (p.montoAcumulado / p.total) * 100) : 0;
-      var full  = pct >= 100;
-      var tipo  = p.tipoPago || '—';
-      var badgeTipo = p.tipoPago === 'Crédito'
-        ? '<span class="badge credito">Crédito</span>'
-        : p.tipoPago === 'Contado'
-          ? '<span class="badge contado">Contado</span>'
-          : '<span style="color:var(--muted);font-size:12px">—</span>';
-
-      return '<tr style="cursor:pointer" data-id="' + esc(p.orderId) + '" onclick="openDetalle(this.dataset.id)">' +
-        '<td>' +
-          '<div style="font-weight:600">' + esc(p.customerName || '—') + '</div>' +
-          '<div style="font-size:11px;color:var(--muted)">' + esc(p.customerPhone || '') + '</div>' +
-        '</td>' +
-        '<td>' +
-          '<div style="font-family:var(--mono);font-size:11px;color:var(--accent2)">' + esc(p.orderId) + '</div>' +
-          '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + fmt(p.montoAcumulado) + ' / ' + fmt(p.total) + '</div>' +
-          '<div class="progress-wrap"><div class="progress-bar' + (full?' full':'') + '" style="width:' + pct.toFixed(0) + '%"></div></div>' +
-        '</td>' +
-        '<td style="font-weight:800;font-family:var(--font-d);color:var(--warn)">' + fmt(p.saldo) + '</td>' +
-        '<td>' + badgeTipo + '</td>' +
-        '<td><button class="btn primary sm" onclick="event.stopPropagation();openDetalle(\'' + esc(p.orderId) + '\')">Cobrar</button></td>' +
-      '</tr>';
-    }).join('') +
-    '</tbody></table>';
-}
-
-// ── ABRIR DETALLE / MODAL COBRO ──────────────────────────────
-async function openDetalle(orderId) {
-  CURRENT_PEDIDO = ALL_PEDIDOS.find(function(p) { return p.orderId === orderId; });
-  if (!CURRENT_PEDIDO) return;
-
-  document.getElementById('modal-title').textContent = 'Cobro — ' + orderId;
-  document.getElementById('btn-registrar').disabled = false;
-  document.getElementById('btn-registrar').textContent = '✓ Registrar abono';
-
-  // Cargar historial de pagos
-  document.getElementById('modal-body').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
-  document.getElementById('modal-cobro').classList.add('open');
-
-  var res = await apiPagos('pagos.orden.detalle', { orderId });
-  CURRENT_PAGOS = (res && res.pagos) ? res.pagos : [];
-  renderModalBody();
-}
-
-function renderModalBody() {
-  var p    = CURRENT_PEDIDO;
-  var saldo = p.saldo || 0;
-
-  var historial = '';
-  if (CURRENT_PAGOS.length) {
-    historial = '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:.06em;margin-bottom:6px">Historial de abonos</div>' +
-      '<div class="abonos-list">' +
-      CURRENT_PAGOS.map(function(ab) {
-        var esTransf = ab.tipoPago === 'Transferencia';
-        var comprob  = (esTransf && ab.comprobanteUrl)
-          ? '<a href="' + ab.comprobanteUrl + '" target="_blank" style="font-size:11px;color:var(--accent2);text-decoration:none">📎 Ver comprobante</a>'
-          : '';
-        return '<div class="abono-row">' +
-          '<div class="abono-left">' +
-            '<div style="font-weight:600">' + esc(ab.fechaAbono || ab.createdAt || '') + '</div>' +
-            '<div class="abono-tipo">' + esc(ab.tipoPago || '') +
-              (ab.refTransferencia ? ' · Ref: ' + esc(ab.refTransferencia) : '') +
-            '</div>' +
-            comprob +
-          '</div>' +
-          '<div class="abono-amt">+' + fmt(ab.monto) + '</div>' +
-        '</div>';
-      }).join('') +
-      '</div>';
-  }
-
-  document.getElementById('modal-body').innerHTML =
-    // Datos del pedido
-    '<div class="detail-grid">' +
-      di('Cliente',  p.customerName  || '—') +
-      di('Teléfono', p.customerPhone || '—') +
-      di('Total',    fmt(p.total)) +
-      di('Acumulado', fmt(p.montoAcumulado)) +
-    '</div>' +
-
-    // Saldo pendiente
-    '<div class="saldo-banner">' +
-      '<div class="saldo-info">' +
-        '<div class="saldo-txt">Saldo pendiente</div>' +
-        '<div class="saldo-num' + (saldo <= 0 ? ' zero' : '') + '" id="saldo-display">' + fmt(saldo) + '</div>' +
-      '</div>' +
-      (p.tipoPago ? '<span class="badge ' + (p.tipoPago === 'Crédito' ? 'credito' : 'contado') + '">' + p.tipoPago + '</span>' : '') +
-    '</div>' +
-
-    historial +
-
-    // Formulario de abono
-    (saldo > 0 ? formAbono(saldo) : '<div style="background:#dcfce7;border-radius:10px;padding:14px;text-align:center;font-weight:600;color:#166534;font-size:14px">✅ Pedido liquidado</div>');
-
-  // Actualizar botón
-  document.getElementById('btn-registrar').disabled = saldo <= 0;
-  if (saldo <= 0) document.getElementById('btn-registrar').textContent = '✅ Liquidado';
-
-  // Listeners del formulario
-  bindFormListeners();
-}
-
-function formAbono(saldo) {
-  return '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:.06em;margin-bottom:10px">Nuevo abono</div>' +
-
-    '<div class="form-section">' +
-      '<label class="form-label">Monto del abono</label>' +
-      '<input class="form-input" type="number" id="inp-monto" placeholder="0.00" min="0.01" max="' + saldo + '" step="0.01" value="' + saldo.toFixed(2) + '">' +
-    '</div>' +
-
-    '<div class="form-section">' +
-      '<label class="form-label">Tipo de pago</label>' +
-      '<div class="tipo-grid">' +
-        '<button class="tipo-btn sel" id="tipo-efectivo" onclick="selectTipo(\'Efectivo\')">💵 Efectivo</button>' +
-        '<button class="tipo-btn"     id="tipo-transferencia" onclick="selectTipo(\'Transferencia\')">🏦 Transferencia</button>' +
-      '</div>' +
-      '<input type="hidden" id="inp-tipo" value="Efectivo">' +
-    '</div>' +
-
-    '<div id="transferencia-extra" style="display:none">' +
-      '<div class="form-section">' +
-        '<label class="form-label">Nro. referencia bancaria</label>' +
-        '<input class="form-input" type="text" id="inp-ref" placeholder="Ej. TRF-2024-001234">' +
-      '</div>' +
-      '<div class="form-section">' +
-        '<label class="form-label">Comprobante de transferencia</label>' +
-        '<input type="file" id="inp-file" accept="image/*" style="display:none" onchange="previewFile(this)">' +
-        '<div class="upload-zone" id="upload-zone" onclick="document.getElementById(\'inp-file\').click()">' +
-          '<div style="font-size:22px">📎</div>' +
-          '<div style="font-size:13px;color:var(--muted);margin-top:4px">Toca para adjuntar imagen</div>' +
-          '<img id="upload-preview" class="upload-thumb" style="display:none">' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-
-    '<div class="form-section">' +
-      '<label class="form-label">Fecha del abono</label>' +
-      '<input class="form-input" type="date" id="inp-fecha" value="' + new Date().toISOString().split('T')[0] + '">' +
-    '</div>' +
-
-    '<div class="form-section">' +
-      '<label class="form-label">Notas (opcional)</label>' +
-      '<input class="form-input" type="text" id="inp-notas" placeholder="Observaciones...">' +
-    '</div>';
-}
-
-function bindFormListeners() {}
-
-function selectTipo(tipo) {
-  document.getElementById('inp-tipo').value = tipo;
-  document.getElementById('tipo-efectivo').className      = 'tipo-btn' + (tipo === 'Efectivo' ? ' sel' : '');
-  document.getElementById('tipo-transferencia').className = 'tipo-btn' + (tipo === 'Transferencia' ? ' sel' : '');
-  document.getElementById('transferencia-extra').style.display = tipo === 'Transferencia' ? 'block' : 'none';
-}
-
-function previewFile(input) {
-  var file = input.files[0];
-  if (!file) return;
-  var zone = document.getElementById('upload-zone');
-  var prev = document.getElementById('upload-preview');
-  zone.classList.add('has-file');
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    prev.src = e.target.result;
-    prev.style.display = 'block';
-  };
-  reader.readAsDataURL(file);
-}
-
-// ── CONFIRMAR ABONO ──────────────────────────────────────────
-async function confirmarAbono() {
   var btn = document.getElementById('btn-registrar');
-  var monto = parseFloat(document.getElementById('inp-monto')?.value || 0);
-  var tipo  = document.getElementById('inp-tipo')?.value || 'Efectivo';
-  var ref   = document.getElementById('inp-ref')?.value  || '';
-  var fecha = document.getElementById('inp-fecha')?.value || '';
-  var notas = document.getElementById('inp-notas')?.value || '';
+  btn.disabled    = true;
+  btn.textContent = 'Guardando...';
 
-  if (!monto || monto <= 0) { toast('Ingresa un monto válido', 'error'); return; }
-  if (tipo === 'Transferencia' && !ref) { toast('Ingresa el número de referencia', 'error'); return; }
-
-  btn.disabled = true;
-  btn.textContent = 'Registrando...';
-
-  // Preparar comprobante si hay imagen
-  var comprobanteBase64 = '';
-  var comprobanteMime   = 'image/jpeg';
-  var comprobanteName   = '';
-  var fileInput = document.getElementById('inp-file');
-  if (tipo === 'Transferencia' && fileInput && fileInput.files[0]) {
-    var file = fileInput.files[0];
-    comprobanteMime = file.type;
-    comprobanteName = file.name;
-    comprobanteBase64 = await fileToBase64(file);
-  }
-
-  var payload = {
-    orderId:          CURRENT_PEDIDO.orderId,
-    monto:            monto,
-    tipoPago:         tipo,
-    refTransferencia: ref,
-    fechaAbono:       fecha,
-    notas:            notas,
-    comprobanteBase64,
-    comprobanteMime,
-    comprobanteName,
-  };
-
-  var res = await apiPagos('pagos.registrar', payload);
-  btn.disabled = false;
-  btn.textContent = '✓ Registrar abono';
-
-  if (!res) return;
-
-  toast(res.message || 'Abono registrado ✅', 'success');
-
-  // Actualizar pedido en memoria
-  var idx = ALL_PEDIDOS.findIndex(function(p) { return p.orderId === CURRENT_PEDIDO.orderId; });
-  if (idx >= 0) {
-    ALL_PEDIDOS[idx].montoAcumulado = res.montoAcumulado;
-    ALL_PEDIDOS[idx].saldo          = res.saldoPendiente;
-    if (res.cerrado) {
-      // Quitar de la lista de pendientes
-      ALL_PEDIDOS.splice(idx, 1);
-      closeModal();
-    } else {
-      CURRENT_PEDIDO = ALL_PEDIDOS[idx];
-      // Recargar historial
-      var res2 = await apiPagos('pagos.orden.detalle', { orderId: CURRENT_PEDIDO.orderId });
-      CURRENT_PAGOS = (res2 && res2.pagos) ? res2.pagos : [];
-      renderModalBody();
-    }
-  }
-
-  updateStats();
-  renderPedidos();
-}
-
-function fileToBase64(file) {
-  return new Promise(function(resolve, reject) {
-    var reader = new FileReader();
-    reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+  var r = await apiCobros('cobro.pago.registrar', {
+    orderId:    CURRENT_ORDER.orderId,
+    monto:      monto,
+    metodoPago: CURRENT_METODO,
+    nota:       nota,
   });
+
+  btn.disabled    = false;
+  btn.textContent = 'Registrar abono';
+
+  if (!r) return;
+
+  // Actualizar datos en memoria
+  CURRENT_ORDER.acumuladoPagos = r.nuevoAcumulado;
+  CURRENT_ORDER.saldoPendiente = r.saldoPendiente;
+  CURRENT_ORDER.estadoCobro    = r.estadoCobro;
+  CURRENT_ORDER.fechaFiniquito = r.fechaFiniquito;
+
+  var o = ALL_ORDERS.find(function(x){ return x.orderId === CURRENT_ORDER.orderId; });
+  if (o) {
+    o.acumuladoPagos = r.nuevoAcumulado;
+    o.saldoPendiente = r.saldoPendiente;
+    o.estadoCobro    = r.estadoCobro;
+    o.fechaFiniquito = r.fechaFiniquito;
+  }
+
+  // Refrescar UI
+  renderSaldoHero(CURRENT_ORDER);
+  if (r.liquidado) {
+    document.getElementById('abono-box').style.display = 'none';
+    toast('🎉 Pedido liquidado completamente', 'success');
+  } else {
+    toast('Abono de ' + fmt(monto) + ' registrado ✅', 'success');
+  }
+
+  // Reset form
+  document.getElementById('abono-monto').value = '';
+  document.getElementById('abono-nota').value  = '';
+
+  // Recargar historial y resumen
+  var hist = await apiCobros('cobro.pago.historial', { orderId: CURRENT_ORDER.orderId });
+  renderHistorial(hist ? hist.pagos || [] : []);
+  loadResumen();
+  updateCounts();
+  renderOrders();
 }
 
 function closeModal() {
   document.getElementById('modal-cobro').classList.remove('open');
-  CURRENT_PEDIDO = null;
-  CURRENT_PAGOS  = [];
+  CURRENT_ORDER = null;
 }
 
-// ── HELPERS UI ───────────────────────────────────────────────
+// ── NAVEGACIÓN ────────────────────────────────────────────────
+function goBack() {
+  var base    = location.href.split('?')[0].replace(/[^\/]+$/, '');
+  var backend = localStorage.getItem('ld_backend') || '';
+  var store   = localStorage.getItem('ld_store')   || '';
+  var url     = base + 'pedidos.html';
+  if (backend) url += '?backend=' + encodeURIComponent(backend);
+  if (store)   url += (backend ? '&' : '?') + 'store=' + encodeURIComponent(store);
+  location.href = url;
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
 function di(label, val) {
   return '<div><div class="detail-label">' + label + '</div><div class="detail-val">' + esc(String(val)) + '</div></div>';
 }
@@ -608,83 +806,24 @@ function esc(s) {
 }
 
 function fmt(n) {
-  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(n || 0));
+  return new Intl.NumberFormat('es-MX', { style:'currency', currency:'MXN' }).format(Number(n || 0));
+}
+
+function labelEstado(s) {
+  return { pendiente:'Pendiente', parcial:'Parcial', liquidado:'Liquidado' }[s] || s;
 }
 
 function toast(msg, type) {
   type = type || 'success';
   var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className   = type;
-  el.style.display = 'block';
+  el.textContent = msg; el.className = type; el.style.display = 'block';
   clearTimeout(el._t);
-  el._t = setTimeout(function() { el.style.display = 'none'; }, 3500);
+  el._t = setTimeout(function(){ el.style.display = 'none'; }, 3500);
 }
 
-// ── POLLING Y VISIBILIDAD ────────────────────────────────────
-document.addEventListener('visibilitychange', function() {
-  if (document.hidden) { clearInterval(POLL_TIMER); }
-  else { loadPedidos(true); iniciarPolling(); }
-});
-
-document.getElementById('modal-cobro').addEventListener('click', function(e) {
+document.getElementById('modal-cobro').addEventListener('click', function(e){
   if (e.target === document.getElementById('modal-cobro')) closeModal();
 });
-
-// ── VOLVER AL PANEL ──────────────────────────────────────────
-function goBackPanel() {
-  var backend = localStorage.getItem('ld_backend') || '';
-  var store   = localStorage.getItem('ld_store')   || '';
-  var base    = window.location.href.split('?')[0].replace(/[^\/]+$/, '');
-  var url     = base + 'index.html';
-  if (backend) url += '?backend=' + encodeURIComponent(backend);
-  if (store)   url += (backend ? '&' : '?') + 'store=' + encodeURIComponent(store);
-  window.location.href = url;
-}
-
-// ── MONITOR INACTIVIDAD ──────────────────────────────────────
-var _modIdleWarn = null, _modIdleClose = null, _modCloseCount = null;
-
-function resetModIdle() {
-  clearTimeout(_modIdleWarn);
-  clearTimeout(_modIdleClose);
-  clearInterval(_modCloseCount);
-  var w = document.getElementById('mod-inactive-warn');
-  if (w) w.classList.remove('show');
-  _modIdleWarn = setTimeout(function() {
-    if (w) w.classList.add('show');
-    var secs = 60;
-    var el = document.getElementById('mod-inactive-secs');
-    if (el) el.textContent = secs;
-    _modCloseCount = setInterval(function() {
-      secs--;
-      if (el) el.textContent = secs;
-      if (secs <= 0) { clearInterval(_modCloseCount); goBackPanel(); }
-    }, 1000);
-    _modIdleClose = setTimeout(goBackPanel, 60000);
-  }, 10 * 60 * 1000);
-}
-
-function extendModSession() { resetModIdle(); }
-
-['click','touchstart','keypress','scroll','mousemove'].forEach(function(ev) {
-  document.addEventListener(ev, resetModIdle, { passive: true });
-});
 </script>
-
-<!-- Botón flotante volver -->
-<button id="btn-back-panel" onclick="goBackPanel()" title="Volver al panel principal">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-    <path d="M19 12H5M12 5l-7 7 7 7"/>
-  </svg>
-  Panel
-</button>
-
-<!-- Monitor inactividad -->
-<div id="mod-inactive-warn">
-  <span>⏱ Módulo inactivo — cierra en <strong id="mod-inactive-secs">60</strong>s</span>
-  <button id="mod-inactive-warn-btn" onclick="extendModSession()">Seguir aquí</button>
-</div>
-
 </body>
 </html>
