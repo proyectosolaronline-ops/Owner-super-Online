@@ -1127,7 +1127,6 @@ function renderClienteSuggestions(q) {
 
   var sugg = document.getElementById('cliente-sugg-list');
 
-  // Clientes existentes (puede ser lista vacía)
   var html = lista.map(function(c, idx) {
     var ini = (c.name||'?')[0].toUpperCase();
     var sub = [c.phone, c.email].filter(Boolean).join(' · ') || 'Sin contacto';
@@ -1140,7 +1139,7 @@ function renderClienteSuggestions(q) {
     '</div>';
   }).join('');
 
-  // "Nuevo cliente" SIEMPRE visible, sin importar si hay coincidencias
+  // Opción de crear nuevo
   html += '<div class="cliente-sugg-item" data-type="nuevo">' +
     '<div class="cliente-sugg-avatar" style="background:#6366f1">+</div>' +
     '<div class="cliente-sugg-info">' +
@@ -1153,6 +1152,7 @@ function renderClienteSuggestions(q) {
   sugg.innerHTML = html;
   sugg.classList.add('show');
 
+  // Eventos via addEventListener — sin inline onclick con strings
   sugg.querySelectorAll('.cliente-sugg-item[data-type="existing"]').forEach(function(el) {
     var idx = parseInt(el.getAttribute('data-idx'), 10);
     el.addEventListener('click', function() { seleccionarCliente(lista[idx]); });
