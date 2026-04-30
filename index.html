@@ -373,6 +373,9 @@ async function fetchPlanInfo(forceBroadcast) {
         var changed = JSON.stringify(planRow) !== JSON.stringify(PLAN_INFO);
         PLAN_INFO   = planRow;
         // localStorage = solo caché, nunca fuente primaria
+        //* ayuda deepseek *//
+        localStorage.setItem('ld_backend_cobros', 'https://script.google.com/macros/s/AKfycbwe35LZGuhRyrVnRzOKAZf4TAmoB4Awp9CyGlSnaKhtGaiAUM8w6_94KJgxIGd0xcov/exec');
+        //* termina deepseek *//
         localStorage.setItem('ld_plan_info', JSON.stringify(PLAN_INFO));
         if (changed || forceBroadcast) {
           applyRoleUI(USER_ROLE);
