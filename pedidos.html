@@ -167,6 +167,35 @@ tr:last-child td{border-bottom:none}
   background:rgba(0,0,0,.15);border:none;border-radius:6px;
   padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
 }
+//* me ayudo deepseek *//
+/* ── COBROS ── */
+.badge-tipo {
+  display: inline-flex; align-items: center; padding: 2px 7px;
+  border-radius: 99px; font-size: 10px; font-weight: 700;
+}
+.badge-tipo.credito { background: rgba(14,165,233,.15); color: #0ea5e9; border: 1px solid rgba(14,165,233,.3); }
+.badge-tipo.contado { background: rgba(0,229,160,.12);  color: #00e5a0; border: 1px solid rgba(0,229,160,.3); }
+
+#btn-cobros-float {
+  position: fixed; bottom: 80px; left: 16px; z-index: 88;
+  background: #0ea5e9; color: #fff;
+  border: none; border-radius: 99px;
+  padding: 11px 18px 11px 14px;
+  font-size: 13px; font-weight: 700;
+  display: none; align-items: center; gap: 7px;
+  box-shadow: 0 4px 20px rgba(14,165,233,.5);
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+  animation: cobros-pulse 2.5s ease-in-out infinite;
+}
+#btn-cobros-float.show { display: flex; }
+@keyframes cobros-pulse {
+  0%,100% { box-shadow: 0 4px 20px rgba(14,165,233,.5); }
+  50%      { box-shadow: 0 4px 28px rgba(14,165,233,.8); }
+}
+#btn-cobros-float svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+//* termina ayuda *//  
+  
 
 </style>
 </head>
@@ -276,6 +305,10 @@ const STORE_ID= localStorage.getItem('ld_store')  || '';
 const STORE_BASE_URL = 'https://proyectosolaronline-ops.github.io/superOnline-Tienda/';
 
 let STORE_CFG = {};
+  //*ayuda de deepseek*//
+const BACKEND_COBROS = (new URLSearchParams(location.search).get('backendCobros')) || localStorage.getItem('ld_backend_cobros') || '';
+  
+  //*termina ayuda*//
 let ALL_ORDERS= [];
 let ALL_PRODS = [];
 let CURRENT_FILTER = '';
@@ -318,6 +351,9 @@ async function loadStoreInfo() {
   if (!info || !info.store) return;
   STORE_CFG = info.store.config || {};
   document.getElementById('topbar-name').textContent = (info.store.name || 'Mi Tienda') + ' · Pedidos';
+  //*ayuda de deepseek*//
+  checkAllowCobros(STORE_CFG);
+  //*termina ayuda deepseek*//
 }
 
 async function loadOrders(silent) {
@@ -764,6 +800,36 @@ function extendModSession() { resetModIdle(); }
 
 resetModIdle();
 
+  // ── COBROS: verificar si la tienda tiene permitido cobros ──
+function checkAllowCobros(cfg) {
+  cfg = cfg || STORE_CFG || {};
+  if (cfg.allowCobros === true || cfg.allowCobros === 'true') {
+    var btn = document.getElementById('btn-cobros-float');
+    if (btn) btn.classList.add('show');
+  }
+}
+//* ayuda de deepseek *//
+// ── Navegar a control-pagos.html ──//
+function irACobros() {
+  var base    = location.href.split('?')[0].replace(/[^\/]+$/, '');
+  var backend = localStorage.getItem('ld_backend')        || '';
+  var cobros  = localStorage.getItem('ld_backend_cobros') || '';
+  var store   = localStorage.getItem('ld_store')          || '';
+  var params  = [];
+  if (backend) params.push('backend='        + encodeURIComponent(backend));
+  if (cobros)  params.push('backendCobros='  + encodeURIComponent(cobros));
+  if (store)   params.push('store='          + encodeURIComponent(store));
+  location.href = base + 'control-pagos.html' + (params.length ? '?' + params.join('&') : '');
+}
+
+  // ── Mostrar tipo de pago en tabla ──
+function tipoPagoCell(tipo) {
+  if (!tipo) return '<span style="color:var(--muted);font-size:11px">—</span>';
+  return '<span class="badge-tipo ' + tipo + '">' +
+    (tipo === 'credito' ? '💳 Crédito' : '💵 Contado') +
+  '</span>';
+}
+//* termina ayuda deepseek*//
 </script>
   <script src="lk-guardian.js">
 
@@ -781,5 +847,16 @@ resetModIdle();
   <span>⏱ Módulo inactivo — cierra en <strong id="mod-inactive-secs">60</strong>s</span>
   <button id="mod-inactive-warn-btn" onclick="extendModSession()">Seguir aquí</button>
 </div>
+//* inicia ayuda deepseek*//
+<!-- BOTÓN FLOTANTE COBROS (condicional) -->
+<button id="btn-cobros-float" onclick="irACobros()" title="Ir a Control de Cobros">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <line x1="2" y1="10" x2="22" y2="10"/>
+  </svg>
+  💰 Cobros
+</button>
+  
+  //*termina ayuda deepseek*//
 </body>
 </html>
