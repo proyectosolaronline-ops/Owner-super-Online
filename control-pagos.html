@@ -538,7 +538,8 @@ async function loadResumen() {
 async function loadOrders() {
   document.getElementById('orders-wrap').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
   // Cargar todos (incluyendo liquidados) para que filtros funcionen
-var r = await apiCobros('cobro.orders.list', { soloActivos: false });  if (!r) return;
+var r = await apiCobros('cobro.orders.list', { soloActivos: false });
+  if (!r) return;
   ALL_ORDERS = r.orders || [];
   updateCounts();
   renderOrders();
@@ -623,10 +624,10 @@ var tpNorm = (o.tipoPago||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u
   renderSaldoHero(o);
 
   // Mostrar u ocultar caja de abono
-  var esCredito  = (o.tipoPago || 'credito') === 'credito';
-  var liquidado  = o.estadoCobro === 'liquidado';
+var tpCheck   = (o.tipoPago||'credito').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  var esCredito = tpCheck === 'credito';
+  var liquidado = o.estadoCobro === 'liquidado';
   document.getElementById('abono-box').style.display = (esCredito && !liquidado) ? 'block' : 'none';
-
   // Reset form
   document.getElementById('abono-monto').value = '';
   document.getElementById('abono-nota').value  = '';
@@ -699,13 +700,13 @@ async function setTipoPago(tipo) {
   });
   if (!r) { actualizarTipoBtns(CURRENT_ORDER.tipoPago); return; }
 
-  CURRENT_ORDER.tipoPago = tipo;
+CURRENT_ORDER.tipoPago = tipoNorm;
   // Actualizar en lista
   var o = ALL_ORDERS.find(function(x){ return x.orderId === CURRENT_ORDER.orderId; });
-  if (o) o.tipoPago = tipo;
+  if (o) o.tipoPago = tipoNorm;
 
   var liquidado = CURRENT_ORDER.estadoCobro === 'liquidado';
-  document.getElementById('abono-box').style.display = (tipo === 'credito' && !liquidado) ? 'block' : 'none';
+  document.getElementById('abono-box').style.display = (tipoNorm === 'credito' && !liquidado) ? 'block' : 'none';
 
   toast('Tipo de pago: ' + tipo, 'success');
   renderOrders();
