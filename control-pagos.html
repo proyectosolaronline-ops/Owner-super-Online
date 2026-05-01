@@ -774,12 +774,16 @@ async function registrarAbono() {
   document.getElementById('abono-monto').value = '';
   document.getElementById('abono-nota').value  = '';
 
-  // Recargar historial y resumen
+  
+// Recargar historial y resumen
   var hist = await apiCobros('cobro.pago.historial', { orderId: CURRENT_ORDER.orderId });
   renderHistorial(hist ? hist.pagos || [] : []);
   loadResumen();
   updateCounts();
   renderOrders();
+
+  // Mostrar botón generar link cliente
+  mostrarBtnLinkCliente(CURRENT_ORDER.orderId);
 }
 
 function closeModal() {
@@ -826,6 +830,39 @@ function toast(msg, type) {
 document.getElementById('modal-cobro').addEventListener('click', function(e){
   if (e.target === document.getElementById('modal-cobro')) closeModal();
 });
+
+  // ── LINK DE CONSULTA PARA CLIENTE ────────────────────────────
+function mostrarBtnLinkCliente(orderId) {
+  var prev = document.getElementById('btn-link-cliente');
+  if (prev) prev.remove();
+
+  var btn = document.createElement('button');
+  btn.id        = 'btn-link-cliente';
+  btn.innerHTML = '🔗 Enviar link de consulta al cliente';
+  btn.style.cssText =
+    'width:100%;padding:13px;margin-top:8px;' +
+    'background:var(--surface2);color:var(--text);' +
+    'border:1.5px solid var(--border);border-radius:10px;' +
+    'font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;' +
+    'display:flex;align-items:center;justify-content:center;gap:8px;';
+
+  btn.onclick = async function(){
+    btn.disabled    = true;
+    btn.textContent = 'Generando link...';
+    var baseUrl = location.href.split('?')[0].replace(/[^\/]+$/,'');
+    var r = await apiCobros('cobro.cliente.link', {
+      orderId: orderId,
+      baseUrl: baseUrl,
+    });
+    btn.disabled = false;
+    btn.innerHTML = '🔗 Enviar link de consulta al cliente';
+    if (!r) return;
+    toast('✅ Link enviado al cliente por correo', 'success');
+  };
+
+  var histWrap = document.querySelector('.historial-wrap');
+  if (histWrap) histWrap.insertBefore(btn, histWrap.firstChild);
+}
 </script>
 </body>
 </html>
