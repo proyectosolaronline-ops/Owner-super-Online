@@ -538,8 +538,7 @@ async function loadResumen() {
 async function loadOrders() {
   document.getElementById('orders-wrap').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
   // Cargar todos (incluyendo liquidados) para que filtros funcionen
-  var r = await apiCobros('cobro.orders.list', { soloActivos: 'false' });
-  if (!r) return;
+var r = await apiCobros('cobro.orders.list', { soloActivos: false });  if (!r) return;
   ALL_ORDERS = r.orders || [];
   updateCounts();
   renderOrders();
@@ -611,8 +610,8 @@ async function openDetail(orderId) {
   document.getElementById('modal-title').textContent = 'Pedido ' + orderId;
 
   // Tipo pago selector
-  actualizarTipoBtns(o.tipoPago || 'credito');
-
+var tpNorm = (o.tipoPago||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'') || 'credito';
+  actualizarTipoBtns(tpNorm);
   // Detail grid
   document.getElementById('detail-grid').innerHTML =
     di('Cliente',  o.customerName  || '—') +
@@ -683,18 +682,20 @@ function renderHistorial(pagos) {
 
 // ── TIPO PAGO ─────────────────────────────────────────────────
 function actualizarTipoBtns(tipo) {
-  document.getElementById('tbtn-credito').className = 'tipo-btn' + (tipo === 'credito' ? ' sel-credito' : '');
-  document.getElementById('tbtn-contado').className = 'tipo-btn' + (tipo === 'contado' ? ' sel-contado' : '');
+  var t = (tipo||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  document.getElementById('tbtn-credito').className = 'tipo-btn' + (t === 'credito' ? ' sel-credito' : '');
+  document.getElementById('tbtn-contado').className = 'tipo-btn' + (t === 'contado' ? ' sel-contado' : '');
 }
-
 async function setTipoPago(tipo) {
   if (!CURRENT_ORDER) return;
-  if (CURRENT_ORDER.tipoPago === tipo) return;
+  var tipoNorm = (tipo||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  var currentNorm = (CURRENT_ORDER.tipoPago||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if (currentNorm === tipoNorm) return;
 
-  actualizarTipoBtns(tipo);
+  actualizarTipoBtns(tipoNorm);
   var r = await apiCobros('cobro.orden.tipopago', {
     orderId:  CURRENT_ORDER.orderId,
-    tipoPago: tipo,
+    tipoPago: tipoNorm,
   });
   if (!r) { actualizarTipoBtns(CURRENT_ORDER.tipoPago); return; }
 
