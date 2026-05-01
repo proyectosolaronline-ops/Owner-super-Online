@@ -1177,10 +1177,11 @@ async function confirmarPedido(){
   });
   btn.disabled=false; btn.textContent='Crear pedido';
   if(!res) return;
-  var backendCobros=localStorage.getItem('ld_backend_cobros')||'';
+var backendCobros=localStorage.getItem('ld_backend_cobros')||'';
   if(res.orderId&&backendCobros){
+    var tipoPagoNorm=PEDIDO_TIPO==='Crédito'?'credito':'contado';
     fetch(backendCobros,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({action:'pagos.pedido.tipopago',storeId:STORE_ID,token:TOKEN,orderId:res.orderId,tipoPago:PEDIDO_TIPO})
+      body:JSON.stringify({action:'cobro.orden.tipopago',storeId:STORE_ID,token:TOKEN,orderId:res.orderId,tipoPago:tipoPagoNorm})
     }).catch(function(){});
   }
   toast('Pedido creado: '+res.orderId+' ✅','success');
