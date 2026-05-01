@@ -783,6 +783,19 @@ async function registrarAbono() {
   renderOrders();
 
   // Mostrar botón generar link cliente
+// Mostrar botones WhatsApp y link cliente
+  mostrarBtnWhatsApp({
+    telefono:   CURRENT_ORDER.customerPhone || '',
+    nombre:     CURRENT_ORDER.customerName  || 'Cliente',
+    orderId:    CURRENT_ORDER.orderId,
+    monto:      monto,
+    metodoPago: CURRENT_METODO,
+    total:      CURRENT_ORDER.total,
+    acumulado:  r.nuevoAcumulado,
+    saldo:      r.saldoPendiente,
+    liquidado:  r.liquidado,
+    storeName:  document.getElementById('topbar-name').textContent.replace(' · Cobros','').trim(),
+  });
   mostrarBtnLinkCliente(CURRENT_ORDER.orderId);
 }
 
@@ -860,9 +873,58 @@ function mostrarBtnLinkCliente(orderId) {
     toast('✅ Link enviado al cliente por correo', 'success');
   };
 
-  var histWrap = document.querySelector('.historial-wrap');
+var histWrap = document.querySelector('.historial-wrap');
   if (histWrap) histWrap.insertBefore(btn, histWrap.firstChild);
 }
+
+// ── WHATSAPP AL CLIENTE ──────────────────────────────────────
+function mostrarBtnWhatsApp(data) {
+  var tel = (data.telefono || '').replace(/\D/g,'');
+  if (!tel) return;
+  if (tel.length === 10) tel = '52' + tel;
+
+  var metodo  = data.metodoPago === 'transferencia' ? 'transferencia' : 'efectivo';
+  var estado  = data.liquidado
+    ? '✅ Tu pedido quedó *LIQUIDADO COMPLETAMENTE*. ¡Gracias!'
+    : '⏳ Tu saldo pendiente es: *$' + Number(data.saldo).toFixed(2) + ' MXN*';
+
+  var msg =
+    '👋 Hola *' + data.nombre + '*\n\n' +
+    '📋 *Estado de cuenta — ' + data.storeName + '*\n\n' +
+    '🧾 Pedido: *' + data.orderId + '*\n' +
+    '💰 Abono registrado: *$' + Number(data.monto).toFixed(2) + ' MXN*\n' +
+    '💳 Método: *' + metodo + '*\n\n' +
+    '📊 *Resumen:*\n' +
+    '• Total pedido: $' + Number(data.total).toFixed(2) + ' MXN\n' +
+    '• Total pagado: $' + Number(data.acumulado).toFixed(2) + ' MXN\n' +
+    '• Saldo pendiente: $' + Number(data.saldo).toFixed(2) + ' MXN\n\n' +
+    estado + '\n\n' +
+    '_Mensaje generado automáticamente por ' + data.storeName + '_';
+
+  var url = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(msg);
+
+  var prev = document.getElementById('btn-whatsapp-abono');
+  if (prev) prev.remove();
+
+  var btn = document.createElement('button');
+  btn.id        = 'btn-whatsapp-abono';
+  btn.innerHTML = '📲 Enviar resumen por WhatsApp';
+  btn.onclick   = function() { window.open(url, '_blank'); };
+  btn.style.cssText =
+    'width:100%;padding:13px;margin-top:8px;' +
+    'background:#25d366;color:#fff;border:none;border-radius:10px;' +
+    'font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;' +
+    'display:flex;align-items:center;justify-content:center;gap:8px;';
+
+  var abonoBox = document.getElementById('abono-box');
+  if (abonoBox) {
+    abonoBox.appendChild(btn);
+  } else {
+    var histWrap = document.querySelector('.historial-wrap');
+    if (histWrap) histWrap.insertBefore(btn, histWrap.firstChild);
+  }
+}
+</script>
 </script>
 </body>
 </html>
