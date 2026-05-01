@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mi Estado de Cuenta</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#f4f4f0;--surface:#fff;--surface2:#f9f9f6;--border:#e8e8e2;
+  --accent:#6366f1;--success:#16a34a;--warn:#f59e0b;--danger:#ef4444;
+  --text:#1a1a1a;--muted:#888;
+  --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh}
+
+.screen{display:none;min-height:100vh}
+.screen.show{display:flex;flex-direction:column}
+
+/* LOGIN */
+.login-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{width:100%;max-width:380px;background:var(--surface);border-radius:20px;padding:32px 24px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-brand{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--muted);text-align:center;margin-bottom:24px;text-transform:uppercase;letter-spacing:.1em}
+.login-title{font-family:var(--font-d);font-size:22px;font-weight:800;margin-bottom:6px;text-align:center}
+.login-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;line-height:1.5}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.field input{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:var(--font-b);background:var(--surface);color:var(--text);text-transform:uppercase;letter-spacing:.1em}
+.field input:focus{outline:none;border-color:var(--accent)}
+.err{font-size:13px;color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;margin-bottom:12px;display:none}
+.lbtn{width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-b)}
+.lbtn:disabled{opacity:.5}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CUENTA */
+.topbar{background:var(--text);padding:16px;display:flex;align-items:center;justify-content:space-between}
+.topbar-store{font-family:var(--font-d);font-size:14px;font-weight:700;color:#fff}
+.topbar-sub{font-size:11px;color:#666;margin-top:2px}
+.content{padding:16px;flex:1;max-width:600px;margin:0 auto;width:100%}
+
+.hero-card{background:var(--surface);border-radius:16px;padding:24px;margin-bottom:16px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.hero-name{font-family:var(--font-d);font-size:18px;font-weight:800;margin-bottom:4px}
+.hero-order{font-size:12px;color:var(--muted);margin-bottom:20px}
+.hero-saldo-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.hero-saldo{font-family:var(--font-d);font-size:38px;font-weight:800;color:var(--warn)}
+.hero-saldo.cero{color:var(--success)}
+.hero-estado{display:inline-block;margin-top:10px;padding:6px 16px;border-radius:99px;font-size:12px;font-weight:700}
+.estado-pendiente{background:#fef9c3;color:#854d0e}
+.estado-parcial{background:#dbeafe;color:#1e40af}
+.estado-liquidado{background:#dcfce7;color:#166534}
+
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.mini-card{background:var(--surface);border-radius:12px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.mini-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.mini-val{font-family:var(--font-d);font-size:18px;font-weight:800}
+.mini-val.success{color:var(--success)}
+.mini-val.warn{color:var(--warn)}
+
+.prog-wrap{background:var(--surface);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.prog-label{font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+.prog-bar{height:10px;background:var(--border);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;transition:width .6s;background:var(--accent)}
+.prog-fill.cero{background:var(--success)}
+
+.hist-wrap{background:var(--surface);border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.hist-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.pago-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.pago-item:last-child{border-bottom:none}
+.pago-metodo{font-size:12px;color:var(--muted)}
+.pago-fecha{font-size:11px;color:var(--muted);margin-top:2px}
+.pago-monto{font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--success)}
+.empty-hist{font-size:13px;color:var(--muted);text-align:center;padding:16px 0}
+
+.footer{text-align:center;padding:24px 16px;font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- PANTALLA LOGIN -->
+<div class="screen show" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand" id="login-brand">Estado de Cuenta</div>
+      <div class="login-title">Consulta tu cuenta</div>
+      <div class="login-sub">Ingresa el código de acceso que te enviamos por correo.</div>
+      <div class="field">
+        <label>Código de acceso</label>
+        <input id="inp-code" placeholder="XXXXXXXXXXXXXXXX" maxlength="16" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div class="err" id="login-err"></div>
+      <button class="lbtn" id="btn-acceder" onclick="acceder()">Ver mi cuenta →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANTALLA CUENTA -->
+<div class="screen" id="screen-cuenta">
+  <div class="topbar">
+    <div>
+      <div class="topbar-store" id="cuenta-store">Mi Tienda</div>
+      <div class="topbar-sub">Estado de cuenta</div>
+    </div>
+    <button onclick="cerrarSesion()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Salir</button>
+  </div>
+
+  <div class="content">
+
+    <div class="hero-card">
+      <div class="hero-name" id="cuenta-nombre">—</div>
+      <div class="hero-order" id="cuenta-order">Pedido —</div>
+      <div class="hero-saldo-label">Saldo pendiente</div>
+      <div class="hero-saldo" id="cuenta-saldo">—</div>
+      <div id="cuenta-estado"></div>
+    </div>
+
+    <div class="mini-grid">
+      <div class="mini-card">
+        <div class="mini-label">Total pedido</div>
+        <div class="mini-val" id="cuenta-total">—</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">Total pagado</div>
+        <div class="mini-val success" id="cuenta-pagado">—</div>
+      </div>
+    </div>
+
+    <div class="prog-wrap">
+      <div class="prog-label">
+        <span>Progreso de pago</span>
+        <span id="cuenta-pct">0%</span>
+      </div>
+      <div class="prog-bar">
+        <div class="prog-fill" id="cuenta-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="hist-wrap">
+      <div class="hist-title">Historial de abonos</div>
+      <div id="cuenta-hist"></div>
+    </div>
+
+    <div class="footer" id="cuenta-footer">Consulta generada automáticamente</div>
+
+  </div>
+</div>
+
+<script>
+var BACKEND_COBROS = (new URLSearchParams(location.search).get('backendCobros'))
+  || localStorage.getItem('ld_backend_cobros') || '';
+var STORE_ID = (new URLSearchParams(location.search).get('store'))
+  || localStorage.getItem('ld_store') || '';
+var CODE = new URLSearchParams(location.search).get('code') || '';
+
+window.addEventListener('load', function(){
+  if (CODE) {
+    document.getElementById('inp-code').value = CODE;
+    acceder();
+  }
+});
+
+async function acceder(){
+  var code = (document.getElementById('inp-code').value || '').trim().toUpperCase();
+  var err  = document.getElementById('login-err');
+  var btn  = document.getElementById('btn-acceder');
+  err.style.display = 'none';
+
+  if (!code || code.length < 6){ err.textContent='Ingresa tu código de acceso'; err.style.display='block'; return; }
+  if (!BACKEND_COBROS){ err.textContent='Backend no configurado'; err.style.display='block'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Verificando...';
+
+  try {
+    var res = await fetch(BACKEND_COBROS, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'cobro.cliente.estado', code:code, storeId:STORE_ID })
+    });
+    var data = await res.json();
+    if (!data.ok || data.error) throw new Error(data.error || 'Código inválido');
+    renderCuenta(data);
+  } catch(e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Ver mi cuenta →';
+}
+
+function renderCuenta(d){
+  document.getElementById('cuenta-store').textContent  = d.storeName || 'Mi Tienda';
+  document.getElementById('cuenta-nombre').textContent = d.customerName || '—';
+  document.getElementById('cuenta-order').textContent  = 'Pedido ' + (d.orderId || '—');
+
+  var saldoEl = document.getElementById('cuenta-saldo');
+  saldoEl.textContent = fmt(d.saldo);
+  saldoEl.className   = 'hero-saldo' + (d.saldo === 0 ? ' cero' : '');
+
+  var estadoMap = {
+    pendiente: ['estado-pendiente','⏳ Pendiente'],
+    parcial:   ['estado-parcial',  '⚡ Pago parcial'],
+    liquidado: ['estado-liquidado','✅ Liquidado'],
+  };
+  var em = estadoMap[d.estadoCobro] || ['estado-pendiente','—'];
+  document.getElementById('cuenta-estado').innerHTML =
+    '<span class="hero-estado ' + em[0] + '">' + em[1] + '</span>';
+
+  document.getElementById('cuenta-total').textContent  = fmt(d.total);
+  document.getElementById('cuenta-pagado').textContent = fmt(d.acumulado);
+  document.getElementById('cuenta-pct').textContent    = d.pct + '%';
+
+  var fill = document.getElementById('cuenta-fill');
+  fill.style.width = d.pct + '%';
+  fill.className   = 'prog-fill' + (d.saldo === 0 ? ' cero' : '');
+
+  var hist = document.getElementById('cuenta-hist');
+  if (!d.pagos || !d.pagos.length) {
+    hist.innerHTML = '<div class="empty-hist">Sin abonos registrados aún.</div>';
+  } else {
+    hist.innerHTML = d.pagos.map(function(p){
+      var ico = p.metodoPago === 'transferencia' ? '🏦' : '💵';
+      return '<div class="pago-item">' +
+        '<div>' +
+          '<div class="pago-metodo">' + ico + ' ' + (p.metodoPago||'efectivo') + (p.nota ? ' · ' + p.nota : '') + '</div>' +
+          '<div class="pago-fecha">' + (p.fecha ? new Date(p.fecha).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}) : '—') + '</div>' +
+        '</div>' +
+        '<div class="pago-monto">+' + fmt(p.monto) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  var fecha = new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('cuenta-footer').textContent = 'Consulta generada el ' + fecha + ' · ' + (d.storeName||'');
+
+  document.getElementById('screen-login').classList.remove('show');
+  document.getElementById('screen-cuenta').classList.add('show');
+}
+
+function cerrarSesion(){
+  document.getElementById('screen-cuenta').classList.remove('show');
+  document.getElementById('screen-login').classList.add('show');
+  document.getElementById('inp-code').value = '';
+  CODE = '';
+}
+
+function fmt(n){
+  return new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(Number(n||0));
+}
+</script>
+</body>
+</html>
