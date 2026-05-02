@@ -469,8 +469,8 @@ function openDetail(orderId) {
 
   // Selector tipo cobro — visible solo si hay backend cobros
   var cobroSection = document.getElementById('cobro-section');
-  if (ALLOW_COBROS && BACKEND_COBROS) {
-    cobroSection.style.display = '';
+if (ALLOW_COBROS) {
+  cobroSection.style.display = '';
     renderCobroSelector(o.tipoPago||'');
   } else {
     cobroSection.style.display = 'none';
@@ -508,24 +508,7 @@ function renderCobroSelector(tipoPago) {
 }
 
 async function cambiarTipoCobro(tipo) {
-  if (!CURRENT_ORDER || !BACKEND_COBROS) return;
-var res = await apiCobros('cobro.orden.tipopago', { orderId: CURRENT_ORDER.orderId, tipoPago: tipo });  if (!res || !res.ok) { toast('No se pudo actualizar el tipo de cobro', 'error'); return; }
-  // Actualizar en memoria
-  CURRENT_ORDER.tipoPago = tipo;
-  var o = ALL_ORDERS.find(function(x){ return x.orderId===CURRENT_ORDER.orderId; });
-  if (o) o.tipoPago = tipo;
-  renderCobroSelector(tipo);
-  // Actualizar badge en detail-grid
-  document.getElementById('detail-grid').innerHTML =
-    di('Cliente',   CURRENT_ORDER.customerName  || '—') +
-    di('Teléfono',  CURRENT_ORDER.customerPhone  || '—') +
-    di('Email',     CURRENT_ORDER.customerEmail  || '—') +
-    di('Fecha',     CURRENT_ORDER.createdAt ? new Date(CURRENT_ORDER.createdAt).toLocaleDateString('es-MX') : '—') +
-    di('Cobro',     tipoPagoCell(tipo)) +
-    (CURRENT_ORDER.customerAddress ? di('Dirección', CURRENT_ORDER.customerAddress) : '');
-  renderOrders();
-  toast('Tipo de cobro: ' + tipo, 'success');
-}
+
 
 function di(label, val) {
   return '<div><div class="detail-label">'+label+'</div><div class="detail-val">'+String(val)+'</div></div>';
