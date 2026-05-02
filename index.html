@@ -971,7 +971,29 @@ async function generarLinkFacebook() {
     document.body.removeChild(a);
     URL.revokeObjectURL(a.href);
     toast('✅ Archivo descargado','success');
-
+    setTimeout(function(){
+      var link = 'https://proyectosolaronline-ops.github.io/superOnline-Tienda/share/' + sid + '.html';
+      var modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%">'
+        + '<div style="font-size:22px;margin-bottom:8px">📘 Listo!</div>'
+        + '<div style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.6">'
+        + '1️⃣ Sube <strong>store_' + sid + '.html</strong> a GitHub en <code>superOnline-Tienda/share/</code><br><br>'
+        + '2️⃣ Comparte este link en Facebook:</div>'
+        + '<input id="fb-share-link" value="' + link + '" readonly style="width:100%;padding:10px;border:1.5px solid #e8e8e2;border-radius:8px;font-size:12px;margin-bottom:10px;font-family:monospace">'
+        + '<button onclick="document.getElementById(\'fb-share-link\').select();document.execCommand(\'copy\');this.textContent=\'✅ Copiado!\'" '
+        + 'style="width:100%;padding:11px;background:#1877F2;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Copiar link</button>'
+        + '<button onclick="this.closest(\'div[style*=fixed]\').remove()" '
+        + 'style="width:100%;padding:10px;background:#f4f4f0;color:#555;border:none;border-radius:8px;font-size:13px;cursor:pointer">Cerrar</button>'
+        + '</div>';
+      document.body.appendChild(modal);
+    }, 400);
+  } catch(e) {
+    toast('❌ ' + e.message,'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '📘 Generar link para Facebook';
+  }
+}
 function toast(msg, type) {
   type = type || 'success';
   var el = document.getElementById('toast');
