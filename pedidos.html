@@ -317,16 +317,17 @@ function checkAllowCobros() {
   try { planInfo = JSON.parse(localStorage.getItem('ld_plan_info') || '{}'); } catch(e) {}
   ALLOW_COBROS = STORE_CFG.allowCobros === true  || STORE_CFG.allowCobros === 'true'
               || planInfo.allowCobros  === true  || planInfo.allowCobros  === 'true'
-              || !!BACKEND_COBROS; // si tiene backend cobros configurado, activar siempre
+              || !!BACKEND_COBROS;
 
+  var btn = document.getElementById('btn-cobros-float');
   if (btn) {
     if (ALLOW_COBROS) {
-    btn.classList.add('show');
-  } else {
-    btn.classList.remove('show');
+      btn.classList.add('show');
+    } else {
+      btn.classList.remove('show');
+    }
   }
-} 
-
+}
 
 /* ── CARGAR PEDIDOS ── */
 async function loadOrders(silent) {
