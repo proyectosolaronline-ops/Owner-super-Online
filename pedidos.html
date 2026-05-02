@@ -318,8 +318,13 @@ function checkAllowCobros() {
   ALLOW_COBROS = STORE_CFG.allowCobros === true  || STORE_CFG.allowCobros === 'true'
               || planInfo.allowCobros  === true  || planInfo.allowCobros  === 'true'
               || !!BACKEND_COBROS; // si tiene backend cobros configurado, activar siempre
- if (btn) { btn.style.display = ALLOW_COBROS ? 'flex' : 'none'; }
-}
+if (btn) {
+  if (ALLOW_COBROS === true) {
+    btn.style.display = 'show';
+  } else {
+    btn.style.display = 'none';
+  }
+}}
 
 /* ── CARGAR PEDIDOS ── */
 async function loadOrders(silent) {
