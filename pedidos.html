@@ -509,8 +509,7 @@ function renderCobroSelector(tipoPago) {
 
 async function cambiarTipoCobro(tipo) {
   if (!CURRENT_ORDER || !BACKEND_COBROS) return;
-  var res = await apiCobros('pagos.pedido.tipopago', { orderId: CURRENT_ORDER.orderId, tipoPago: tipo });
-  if (!res || !res.ok) { toast('No se pudo actualizar el tipo de cobro', 'error'); return; }
+var res = await apiCobros('cobro.orden.tipopago', { orderId: CURRENT_ORDER.orderId, tipoPago: tipo });  if (!res || !res.ok) { toast('No se pudo actualizar el tipo de cobro', 'error'); return; }
   // Actualizar en memoria
   CURRENT_ORDER.tipoPago = tipo;
   var o = ALL_ORDERS.find(function(x){ return x.orderId===CURRENT_ORDER.orderId; });
