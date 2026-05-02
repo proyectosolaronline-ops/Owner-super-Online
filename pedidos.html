@@ -418,7 +418,7 @@ function renderOrders() {
     wrap.innerHTML = '<div class="empty"><div class="empty-ico">&#x1F4E6;</div><h3>Sin pedidos</h3></div>';
     return;
   }
-  wrap.innerHTML = '<table><thead><tr><th>Cliente</th><th>Total</th><th>Estado</th>` + (ALLOW_COBROS ? `<th>Cobro</th>` : ``) + `</tr></thead><tbody>' +
+wrap.innerHTML = '<table><thead><tr><th>Cliente</th><th>Total</th><th>Estado</th>' + (ALLOW_COBROS ? '<th>Cobro</th>' : '') + '</tr></thead><tbody>' +
     orders.map(function(o) {
       return '<tr style="cursor:pointer" data-id="'+esc(o.orderId)+'" onclick="openDetail(this.dataset.id)">' +
         '<td><div style="font-weight:600">' + esc(o.customerName||'—') + '</div>' +
