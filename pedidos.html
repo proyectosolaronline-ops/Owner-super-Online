@@ -508,7 +508,23 @@ function renderCobroSelector(tipoPago) {
 }
 
 async function cambiarTipoCobro(tipo) {
-
+  if (!CURRENT_ORDER) return;
+  if (!BACKEND_COBROS) {
+    CURRENT_ORDER.tipoPago = tipo;
+    renderCobroSelector(tipo);
+    renderOrders();
+    toast('Tipo de cobro: ' + tipo, 'success');
+    return;
+  }
+  var res = await apiCobros('cobro.orden.tipopago', { orderId: CURRENT_ORDER.orderId, tipoPago: tipo });
+  if (!res || !res.ok) { toast('No se pudo actualizar', 'error'); return; }
+  CURRENT_ORDER.tipoPago = tipo;
+  var o = ALL_ORDERS.find(function(x){ return x.orderId===CURRENT_ORDER.orderId; });
+  if (o) o.tipoPago = tipo;
+  renderCobroSelector(tipo);
+  renderOrders();
+  toast('Tipo de cobro: ' + tipo, 'success');
+}
 
 function di(label, val) {
   return '<div><div class="detail-label">'+label+'</div><div class="detail-val">'+String(val)+'</div></div>';
@@ -526,8 +542,7 @@ function defaultMsg(o) {
   };
   return msgs[o.status||'pending'] || '';
 }
-
-async function changeStatus(orderId, status) {
+  async function changeStatus(orderId, status) {
   var res = await api('order.update.status', { orderId:orderId, status:status });
   if (!res) return;
   var o = ALL_ORDERS.find(function(x){ return x.orderId===orderId; });
