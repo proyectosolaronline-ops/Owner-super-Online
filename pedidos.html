@@ -317,7 +317,7 @@ function checkAllowCobros() {
   try { planInfo = JSON.parse(localStorage.getItem('ld_plan_info') || '{}'); } catch(e) {}
   ALLOW_COBROS = STORE_CFG.allowCobros === true  || STORE_CFG.allowCobros === 'true'
               || planInfo.allowCobros  === true  || planInfo.allowCobros  === 'true'
-              || !!BACKEND_COBROS;
+           
 
   var btn = document.getElementById('btn-cobros-float');
   if (btn) {
