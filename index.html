@@ -954,7 +954,7 @@ async function generarLinkFacebook() {
     var cfg     = info.store.config || {};
     if (typeof cfg === 'string') { try{ cfg=JSON.parse(cfg); }catch(e){ cfg={}; } }
     var desc    = cfg.description || 'Compra en línea con los mejores precios';
-    var logo    = cfg.logo || cfg.logoUrl || '';
+    var logo    = fixImgUrl(cfg.logo || cfg.logoUrl || '');
     var sid     = STORE_ID;
     var backEnc = encodeURIComponent(BACKEND);
     function ea(s){ return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
