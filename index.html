@@ -118,6 +118,13 @@ tr:last-child td{border-bottom:none}
 .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:30px 20px;color:var(--muted)}
+
+  //* modificacion *//
+  #btnFacebook{background:#1877F2;color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:700;width:100%;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-b)}
+#btnFacebook:hover{background:#145dbf}
+#btnFacebook:disabled{background:#888;cursor:not-allowed}
+
+
 </style>
 </head>
 <body>
@@ -256,8 +263,7 @@ tr:last-child td{border-bottom:none}
 
     <!-- DEBUG TEMPORAL — borrar después -->
     <div id="debug-box" style="background:#1a1a1a;color:#00ff00;border-radius:10px;padding:12px;font-size:11px;font-family:monospace;white-space:pre-wrap;display:none;word-break:break-all"></div>
-    <button onclick="runDebug()" style="background:#6366f1;color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:700;width:100%;cursor:pointer">🔍 Debug Plan Info</button>
-
+<button id="btnFacebook" onclick="generarLinkFacebook()">📘 Generar link para Facebook</button>
     <div class="menu-grid">
       <div class="menu-btn" data-mod="catalogo" onclick="openMod('catalogo.html')">
         <span class="menu-btn-ico">🛍️</span><span class="menu-btn-lbl">Catálogo</span>
@@ -936,6 +942,65 @@ async function runDebug() {
   box.textContent = out.join('\n');
 }
 
+async function generarLinkFacebook() {
+  if (USER_ROLE !== 'owner') { toast('Solo el dueño puede usar esta función','warn'); return; }
+  var btn = document.getElementById('btnFacebook');
+  btn.disabled = true; btn.textContent = '⏳ Obteniendo datos...';
+  try {
+    var info = await postAPI({ action:'store.info', storeId:STORE_ID, token:TOKEN });
+    if (!info || !info.store) throw new Error('No se pudo obtener info de la tienda');
+    var nombre  = info.store.name || 'Mi Tienda';
+    var cfg     = info.store.config || {};
+    if (typeof cfg === 'string') { try{ cfg=JSON.parse(cfg); }catch(e){ cfg={}; } }
+    var desc    = cfg.description || 'Compra en línea con los mejores precios';
+    var logo    = cfg.logo || cfg.logoUrl || '';
+    var sid     = STORE_ID;
+    var backEnc = encodeURIComponent(BACKEND);
+    function ea(s){ return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    var html = '<!DOCTYPE html>\n<html>\n<head>\n'
+      + '  <meta charset="UTF-8">\n'
+      + '  <meta property="og:type"        content="website" />\n'
+      + '  <meta property="og:title"       content="' + ea(nombre) + '" />\n'
+      + '  <meta property="og:description" content="' + ea(desc)   + '" />\n'
+      + '  <meta property="og:image"       content="' + ea(logo)   + '" />\n'
+      + '  <meta property="og:url"         content="https://proyectosolaronline-ops.github.io/superOnline-Tienda/share/' + sid + '.html" />\n'
+      + '  <meta http-equiv="refresh"      content="0;url=https://proyectosolaronline-ops.github.io/superOnline-Tienda/index.html?backend=' + backEnc + '&store=' + sid + '" />\n'
+      + '  <title>' + ea(nombre) + '</title>\n'
+      + '</head>\n<body></body>\n</html>';
+    var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'store_' + sid + '.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    toast('✅ Archivo descargado','success');
+    setTimeout(function(){
+      var link = 'https://proyectosolaronline-ops.github.io/superOnline-Tienda/share/' + sid + '.html';
+      var modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%">'
+        + '<div style="font-size:22px;margin-bottom:8px">📘 Listo!</div>'
+        + '<div style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.6">'
+        + '1️⃣ Sube <strong>store_' + sid + '.html</strong> a GitHub en <code>superOnline-Tienda/share/</code><br><br>'
+        + '2️⃣ Comparte este link en Facebook:</div>'
+        + '<input id="fb-share-link" value="' + link + '" readonly style="width:100%;padding:10px;border:1.5px solid #e8e8e2;border-radius:8px;font-size:12px;margin-bottom:10px;font-family:monospace">'
+        + '<button onclick="document.getElementById(\'fb-share-link\').select();document.execCommand(\'copy\');this.textContent=\'✅ Copiado!\'" '
+        + 'style="width:100%;padding:11px;background:#1877F2;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Copiar link</button>'
+        + '<button onclick="this.closest(\'div[style*=fixed]\').remove()" '
+        + 'style="width:100%;padding:10px;background:#f4f4f0;color:#555;border:none;border-radius:8px;font-size:13px;cursor:pointer">Cerrar</button>'
+        + '</div>';
+      document.body.appendChild(modal);
+    }, 400);
+  } catch(e) {
+    toast('❌ ' + e.message,'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '📘 Generar link para Facebook';
+  }
+}
+
+
+  
 function toast(msg, type) {
   type = type || 'success';
   var el = document.getElementById('toast');
