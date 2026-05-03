@@ -124,7 +124,9 @@ tr:last-child td{border-bottom:none}
 #btnFacebook:hover{background:#145dbf}
 #btnFacebook:disabled{background:#888;cursor:not-allowed}
 
-
+#btnGoogle{background:#34a853;color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:700;width:100%;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-b)}
+#btnGoogle:hover{background:#2d8f47}
+#btnGoogle:disabled{background:#888;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -264,6 +266,7 @@ tr:last-child td{border-bottom:none}
     <!-- DEBUG TEMPORAL — borrar después -->
     <div id="debug-box" style="background:#1a1a1a;color:#00ff00;border-radius:10px;padding:12px;font-size:11px;font-family:monospace;white-space:pre-wrap;display:none;word-break:break-all"></div>
 <button id="btnFacebook" onclick="generarLinkFacebook()">📘 Generar link para Facebook</button>
+    <button id="btnGoogle" onclick="generarLinkGoogle()">🔍 Generar link para Google</button>
         <button onclick="runDebug()" style="background:#6366f1;color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:700;width:100%;cursor:pointer">🔍 Debug Plan Info</button>
     <div class="menu-grid">
       <div class="menu-btn" data-mod="catalogo" onclick="openMod('catalogo.html')">
@@ -999,7 +1002,77 @@ var logo    = fixImgUrl(cfg.bannerUrl || cfg.logo || cfg.logoUrl || '');    var 
   }
 }
 
-
+async function generarLinkGoogle() {
+  if (USER_ROLE !== 'owner') { toast('Solo el dueño puede usar esta función','warn'); return; }
+  var btn = document.getElementById('btnGoogle');
+  btn.disabled = true; btn.textContent = '⏳ Obteniendo datos...';
+  try {
+    var info = await postAPI({ action:'store.info', storeId:STORE_ID, token:TOKEN });
+    if (!info || !info.store) throw new Error('No se pudo obtener info de la tienda');
+    var nombre  = info.store.name || 'Mi Tienda';
+    var cfg     = info.store.config || {};
+    if (typeof cfg === 'string') { try{ cfg=JSON.parse(cfg); }catch(e){ cfg={}; } }
+    var desc     = cfg.description || 'Compra en línea con los mejores precios';
+    var keywords = cfg.keywords    || '';
+    var imagen   = fixImgUrl(cfg.bannerUrl || cfg.logo || cfg.logoUrl || '');
+    var sid      = STORE_ID;
+    var backEnc  = encodeURIComponent(BACKEND);
+    var tiendaUrl = 'https://proyectosolaronline-ops.github.io/superOnline-Tienda/index.html?backend=' + backEnc + '&store=' + sid;
+    function ea(s){ return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    var html = '<!DOCTYPE html>\n<html lang="es">\n<head>\n'
+      + '  <meta charset="UTF-8">\n'
+      + '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+      + '  <meta name="description" content="' + ea(desc)     + '" />\n'
+      + '  <meta name="keywords"    content="' + ea(keywords)  + '" />\n'
+      + '  <meta name="robots"      content="index, follow" />\n'
+      + '  <meta property="og:type"        content="website" />\n'
+      + '  <meta property="og:title"       content="' + ea(nombre) + '" />\n'
+      + '  <meta property="og:description" content="' + ea(desc)   + '" />\n'
+      + '  <meta property="og:image"       content="' + ea(imagen)  + '" />\n'
+      + '  <meta property="og:image:width"  content="1200" />\n'
+      + '  <meta property="og:image:height" content="630" />\n'
+      + '  <meta property="og:url"         content="https://proyectosolaronline-ops.github.io/superOnline-Tienda/share/' + sid + '.html" />\n'
+      + '  <meta property="og:locale"      content="es_MX" />\n'
+      + '  <title>' + ea(nombre) + '</title>\n'
+      + '  <link rel="canonical" href="https://proyectosolaronline-ops.github.io/superOnline-Tienda/share/' + sid + '.html" />\n'
+      + '</head>\n<body>\n'
+      + '  <h1>' + ea(nombre) + '</h1>\n'
+      + '  <p>' + ea(desc) + '</p>\n'
+      + '  <script>\n'
+      + '    setTimeout(function(){ window.location.href = "' + tiendaUrl + '"; }, 100);\n'
+      + '  <\/script>\n'
+      + '</body>\n</html>';
+    var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'store_' + sid + '.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    toast('✅ Archivo descargado','success');
+    setTimeout(function(){
+      var link = 'https://proyectosolaronline-ops.github.io/superOnline-Tienda/share/' + sid + '.html';
+      var modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%">'
+        + '<div style="font-size:22px;margin-bottom:8px">🔍 Listo para Google!</div>'
+        + '<div style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.6">'
+        + '1️⃣ Sube <strong>store_' + sid + '.html</strong> a GitHub en <code>superOnline-Tienda/share/</code><br><br>'
+        + '2️⃣ Registra este link en Google Search Console:</div>'
+        + '<input id="gg-share-link" value="' + link + '" readonly style="width:100%;padding:10px;border:1.5px solid #e8e8e2;border-radius:8px;font-size:12px;margin-bottom:10px;font-family:monospace">'
+        + '<button onclick="document.getElementById(\'gg-share-link\').select();document.execCommand(\'copy\');this.textContent=\'✅ Copiado!\'" '
+        + 'style="width:100%;padding:11px;background:#34a853;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Copiar link</button>'
+        + '<button onclick="this.closest(\'div[style*=fixed]\').remove()" '
+        + 'style="width:100%;padding:10px;background:#f4f4f0;color:#555;border:none;border-radius:8px;font-size:13px;cursor:pointer">Cerrar</button>'
+        + '</div>';
+      document.body.appendChild(modal);
+    }, 400);
+  } catch(e) {
+    toast('❌ ' + e.message,'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '🔍 Generar link para Google';
+  }
+}
   
 function toast(msg, type) {
   type = type || 'success';
