@@ -179,6 +179,11 @@ tr:last-child td{border-bottom:none}
 <!-- APP -->
 <div class="app" id="app">
   <div class="topbar">
+    <button class="topbar-btn" onclick="history.back()" title="Volver" style="min-width:36px">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+</button>
     <div class="store-logo-mini" id="topbar-logo"><span id="topbar-logo-letter">?</span></div>
     <div class="topbar-name" id="topbar-name">Mi Tienda</div>
 
@@ -294,7 +299,7 @@ tr:last-child td{border-bottom:none}
       <div class="menu-btn owner-only" onclick="openMod('info-cliente.html')">
         <span class="menu-btn-ico">📋</span><span class="menu-btn-lbl">Info Cliente</span>
       </div>
-      <div class="menu-btn owner-only" onclick="window.open('mensajes.html','_blank')">
+      <div class="menu-btn owner-only" onclick="window.location.href='mensajes.html?backend='+encodeURIComponent(BACKEND)+'&store='+encodeURIComponent(STORE_ID)">
         <span class="menu-btn-ico">📣</span><span class="menu-btn-lbl">Mensajes</span>
       </div>
     </div>
@@ -862,16 +867,14 @@ var READ_ONLY_MODS = ['pedidos.html','reporte-movimientos.html','info-cliente.ht
 function openMod(page) {
   var isReadMod = READ_ONLY_MODS.some(function(p){ return page.indexOf(p) !== -1; });
   if (!isReadMod && !requireWriteAccess()) return;
-  window.open(page + '?backend=' + encodeURIComponent(BACKEND) + '&store=' + encodeURIComponent(STORE_ID), '_blank');
+  window.location.href = page + '?backend=' + encodeURIComponent(BACKEND) + '&store=' + encodeURIComponent(STORE_ID);
 }
-
 function openModInv(page) {
   var isReadMod = READ_ONLY_MODS.some(function(p){ return page.indexOf(p) !== -1; });
   if (!isReadMod && !requireWriteAccess()) return;
   var invB = INV_BACKEND || localStorage.getItem('ld_inv_backend') || BACKEND;
-  window.open(page + '?backend=' + encodeURIComponent(BACKEND) + '&store=' + encodeURIComponent(STORE_ID) + '&inv_backend=' + encodeURIComponent(invB), '_blank');
+  window.location.href = page + '?backend=' + encodeURIComponent(BACKEND) + '&store=' + encodeURIComponent(STORE_ID) + '&inv_backend=' + encodeURIComponent(invB);
 }
-
 /* ═══════════════════════════════════════════════════
    CONFIRM / SESSION
 ═══════════════════════════════════════════════════ */
